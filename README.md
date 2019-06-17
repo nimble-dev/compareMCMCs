@@ -2,9 +2,9 @@
 
 compareMCMCs is a package for running, managing, and comparing results from different MCMC packages.   It was refactored from the nimble package as part of the release of nimble version 0.8.0.
 
-compareMCMCs allows you to configure a set of MCMCs to run and then let compareMCMCs time them and generate html output with comparisons of efficiency and posterior distributions. This system started life as part of the nimble package. Although it is now a separate package, it remains somewhat nimble-centric.
+Right now, compareMCMCs is incomplete and not yet released on CRAN.
 
-This package provides tools for comparing MCMC efficiency from nimble and/or other engines.   It was refactored from the nimble package as part of the release of nimble version 0.8.0.
+compareMCMCs allows you to configure a set of MCMCs to run and then let compareMCMCs time them and generate html output with comparisons of efficiency and posterior distributions. This system started life as part of the nimble package. Although it is now a separate package, it remains somewhat nimble-centric.
 
 Use of other MCMCs is supported by a plugin system.  Plugins are provided for JAGS, WinBUGS, OpenBUGS and Stan.  Since nimble, JAGS, WinBUGS and OpenBUGS use different dialects of the same model language, it is sometimes possible to compare them using the same model code. It is possible to write new plugins for new MCMC packages fairly easily. 
 
