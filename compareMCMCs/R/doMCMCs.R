@@ -1,5 +1,40 @@
+#' run a set of MCMCs for performance comparison
+#'
+#' run one or more MCMC engines for one model specification, with 
+#' timing and performance metrics calculated.
+#'
+#' @param modelInfo A list of model-specification information.  For running 
+#' MCMCs in nimble, this can include elements named \code{code} (model
+#'  code as returned from `nimbleCode`), `data` (a list with data and/or 
+#'  constants), and `inits` (a list of initial values).  For JAGS, WinBUGS 
+#'  and OpenBUGS, many models can also be run from the same specification 
+#'  since they use nearly the same model language.  For a different MCMC 
+#'  engine, including a user-provided plugin, the modelInfo can contain 
+#'  whatever elements are required for that engine.
+#'
+#' @param MCMCinfo A list with fields `niter` (number of iterations), 
+#' `thin` (thinning interval), `burnin` (number of iterations to discard 
+#' from the beginning of the MCMC sample), `setSeed` (a numeric value 
+#' passed to `set.seed` to set the random-number generator seed), 
+#' and/or `monitors` (a character vector of variables to record in the 
+#' MCMC sample.
+#'
+#' @param MCMCs
+#'
+#' @param nimbleMCMCdefs
+#'
+#' @param externalMCMCinfo
+#'
+#' @param metrics
+#' 
+#' @details
+#'
+#' @seealso
+#'
+#' @examples
+#' 
 #' @export
-runMCMCs <- function(
+doMCMCs <- function(
   modelInfo,
   MCMCinfo, ##  niter, thin, burnin, setSeed, monitors
   MCMCs = 'nimble',
@@ -21,13 +56,25 @@ runMCMCs <- function(
   ## Later we could modify this so that the model is only built if it is really needed.
   ## Or we could at least set calculate = FALSE and then do a calculate
   ## later if a nimble MCMC will be run.
-  Rmodel <- do.call('nimbleModel', modelInfo, quote = TRUE)
+  ## The following should work:
+  ## Rmodel <- do.call('nimbleModel', modelInfo, quote = TRUE)
+  ## but momentarily that gives a bug in nimble 0.8.0, so instead we use:
+  Rmodel <- nimbleModel(code = modelInfo$code,
+                        data = if(!is.null(modelInfo$data)) 
+                          modelInfo$data else list(),
+                        constants = if(!is.null(modelInfo$constants)) 
+                          modelInfo$constants else list(),
+                        inits = if(!is.null(modelInfo$inits))
+                          modelInfo$inits else list())
   monitors <- MCMCinfo$monitors
   if(length(monitors) == 0) {
     newMonitors <- Rmodel$getNodeNames(topOnly = TRUE, stochOnly = TRUE)
   }
   newMonitors <- Rmodel$expandNodeNames(newMonitors, returnScalarComponents = TRUE)
-  dataFlags <- unlist(lapply(newMonitors, function(mon) eval(parse(text=mon, keep.source=FALSE)[[1]], envir=Rmodel$isDataEnv)))
+  dataFlags <- unlist(lapply(newMonitors, 
+                             function(mon) 
+                               eval(parse(text=mon, keep.source=FALSE)[[1]],
+                                    envir=Rmodel$isDataEnv)))
   newMonitors <- newMonitors[!dataFlags]
   monitors <- newMonitors
   monitorVars <- unique(nimble:::removeIndexing(monitors))
@@ -37,7 +84,8 @@ runMCMCs <- function(
   nMonitorNodes <- length(monitorNodesNIMBLE)
 
   ## set summary stats:
-  ## This step may not be necessary.  If necessary, it should be handled by MCMCmetric functions.
+  ## This step may not be necessary.  If necessary, it should be handled 
+  ## by MCMCmetric functions.
 
   ## setMCMCs: can instead look for MCMCplugins by name
   # 1. Collect nimbleMCMCs and externalMCMCs
@@ -51,7 +99,8 @@ runMCMCs <- function(
       nimbleMCMCs <- c(nimbleMCMCs, mcmc)
     else if(mcmc %in% names(nimbleMCMCdefs))
       nimbleMCMCs <- c(nimbleMCMCs, mcmc)
-    else warning(paste('No MCMC definition is available for requested MCMC "',mcmc,'".'))
+    else warning(paste('No MCMC definition is available for requested MCMC "',
+                       mcmc,'".'))
   }
 
   ## The old system did a step here to setMCMCdefs.
@@ -59,7 +108,8 @@ runMCMCs <- function(
 
   ## Collect two sets of information for calling MCMC plugins.
   ## 1. MCMCinfo contains specifications of the run.
-  ## 2. otherInfo contains specifications of the model, data, constants, inits, & monitors.
+  ## 2. otherInfo contains specifications of the model, data, constants, 
+  ## inits, & monitors.
   MCMCinfo <- list(niter = niter,
                    thin = thin,
                    burnin = burnin)
@@ -93,10 +143,14 @@ runMCMCs <- function(
                                                 MCMCinfo = MCMCinfo,
                                                 otherInfo = otherInfo))
     if(inherits(results[[mcmc]], 'try-error')) {
-      warning(paste("MCMC ", mcmc, " failed."))
+      warning(paste("MCMC ", mcmc, " failed.\n"))
+      results[[mcmc]] <- NULL
+    } else {
+      ## set field MCMC, which is used as a name, if it was not
+      ## set by the MCMC interface (MCMCdefs_env[[mcmc]])
+      if(length(results[[mcmc]]$MCMC)==0)
+        results[[mcmc]]$MCMC <- mcmc
     }
-    if(length(results[[mcmc]]$MCMC)==0)
-      results[[mcmc]]$MCMC <- mcmc
   }
   ## run any nimble MCMCs
   nimbleResults <- NULL

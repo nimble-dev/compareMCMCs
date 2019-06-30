@@ -26,6 +26,7 @@ addMetrics <- function(results,
   }
 }
 
+#' @export
 combineMetrics <- function(results) {
   byParameter <-  do.call('rbind',
                           c(lapply(results,

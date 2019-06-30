@@ -41,6 +41,7 @@ registerPageComponents(list(timing = list(make = 'timeComparisonComponent',
                                                       control = list(ncol = 4)))
 )
 
+#' @export
 make_MCMC_comparison_pages <- function(comparisonResults,
                                        dir = '.',
                                        pageComponents,

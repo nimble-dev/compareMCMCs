@@ -51,12 +51,12 @@ MCMCresult <- R6Class(
       if(is.null(self$metrics$byParameter) | is.null(self$metrics$bySample)) {
         if(length(self$MCMC)==0) {
           if(!silent)
-            warning("Trying to initializeMetrics with no MCMC name set.")
+            warning("Trying to initializeMetrics with no MCMC name set.\n")
           return(FALSE)
         }
         if(is.null(self$samples)) {
           if(!silent)
-            warning("Trying to initializeMetrics with no samples set.")
+            warning("Trying to initializeMetrics with no samples set.\n")
           return(FALSE)
         }
         params <- colnames(self$samples)

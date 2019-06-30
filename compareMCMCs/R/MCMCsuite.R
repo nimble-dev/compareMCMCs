@@ -77,7 +77,7 @@ MCMCsuite <- function(
                    burnin = burnin,
                    setSeed = setSeed,
                    monitors = monitors)
-  results <- runMCMCs (
+  results <- doMCMCs (
     modelInfo,
     MCMCinfo,
     MCMCs = MCMCs,

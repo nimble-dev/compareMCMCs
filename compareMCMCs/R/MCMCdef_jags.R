@@ -29,7 +29,7 @@ MCMCdef_jags_impl <- function(runInfo, MCMCinfo, otherInfo) {
     unlink(modelFileName)
     return(result)
   } else {
-    warning("run_jags: rjags package is required for 'jags' option.")
+    stop("run_jags: rjags package is required for 'jags' option.  jags will not be run.\n")
     return(NULL)
   }
 }

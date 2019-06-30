@@ -13,6 +13,11 @@ License: BSD_3_clause | GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
 Depends:
-  R6, nimble
+  R6, nimble, ggplot2, grid, reshape2
 Imports:
   nimble
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+RoxygenNote: 6.1.1
