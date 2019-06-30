@@ -2,7 +2,7 @@
 
 compareMCMCs is a package for running, managing, and comparing results from different MCMC packages.   It was refactored from the nimble package as part of the release of nimble version 0.8.0.
 
-The User Manual (aka package vignette) giving an overview of compareMCMCs can be viewed [here](https://htmlpreview.github.io/?https://github.com/nimble-dev/compareMCMCs/UserManual/compareMCMCs.html).
+The User Manual (aka package vignette) giving an overview of compareMCMCs can be viewed [here](https://htmlpreview.github.io/?https://github.com/nimble-dev/compareMCMCs/blob/master/UserManual/compareMCMCs.html).
 
 Right now, compareMCMCs works with NIMBLE and JAGs models.  We plan to add some additional features before releasing it on CRAN.
 
