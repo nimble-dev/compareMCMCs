@@ -26,27 +26,28 @@ modelInfo <- list(
 configure_nimble_slice <- function(model) {
   configureMCMC(model, onlySlice = TRUE)
 }
-res <- doMCMCs(modelInfo,
-                MCMCs = c('jags', 'nimble', 'nimble_slice'),
-                nimbleMCMCdefs = list(nimble_slice = 'configure_nimble_slice'),
-                MCMCinfo = list(inits = list(a = 1),
-                                niter = 2000,
-                                burnin = 100))
+res <- compareMCMCs(modelInfo,
+                    MCMCs = c('jags', 'nimble', 'nimble_slice'),
+                    nimbleMCMCdefs = 
+                      list(nimble_slice = 'configure_nimble_slice'),
+                    MCMCcontrol = list(inits = list(a = 1),
+                                       niter = 2000,
+                                       burnin = 100))
 make_MCMC_comparison_pages(res, modelName = 'example1')
 
 ## ------------------------------------------------------------------------
-res_jags <- doMCMCs(modelInfo,
+res_jags <- compareMCMCs(modelInfo,
                 MCMCs = c('jags'),
-                MCMCinfo = list(inits = list(a = 1),
-                                niter = 2000,
-                                burnin = 100))
+                MCMCcontrol = list(inits = list(a = 1),
+                                   niter = 2000,
+                                   burnin = 100))
 ## Perhaps we want to run nimble MCMCs for twice as many iterations
-res_nimble <- doMCMCs(modelInfo,
+res_nimble <- compareMCMCs(modelInfo,
                 MCMCs = c('nimble', 'nimble_slice'),
                 nimbleMCMCdefs = list(nimble_slice = 'configure_nimble_slice'),
-                MCMCinfo = list(inits = list(a = 1),
-                                niter = 4000, ## potentially different than above
-                                burnin = 200))
+                MCMCcontrol = list(inits = list(a = 1),
+                                   niter = 4000, ## potentially different than above
+                                   burnin = 200))
 res <- c(res_jags, res_nimble)
 make_MCMC_comparison_pages(res, modelName = 'example2')
 
@@ -68,7 +69,7 @@ MCMCmetric_quartiles <- function(result) {
   maxDiff <- max(p75-p25)
   list(byParameter = list(p25 = p25,
                           p75 = p75),
-       bySample = list(maxQuartileDiff = maxDiff))
+       byMCMC = list(maxQuartileDiff = maxDiff))
 }
 
 ## ------------------------------------------------------------------------
@@ -81,14 +82,41 @@ registerMetrics(
 )
 
 ## ------------------------------------------------------------------------
+reparam <- list(log_a  = "log(`a`)", a = NULL)
+conversions <- list(nimble = reparam,
+                    nimble_slice = reparam,
+                    jags = reparam)
+res <- compareMCMCs(modelInfo,
+                    MCMCs = c('jags', 'nimble', 'nimble_slice'),
+                    nimbleMCMCdefs = list(nimble_slice = 'configure_nimble_slice'),
+                    conversions = conversions,
+                    MCMCcontrol = list(inits = list(a = 1),
+                                       niter = 2000,
+                                       burnin = 100))
+
+## We will look at the result using combineMetrics (see below)
+## rather than generating new html pages.
 combineMetrics(res)
 
-## ---- eval = FALSE-------------------------------------------------------
-#  registerPageComponent(
-#    list(myNewComponent =
-#           list(make = "myMakeFunction",
-#                fileSuffix = "_myPageComponent",
-#                linkText = "My new page component.")
-#         )
-#    )
+## ------------------------------------------------------------------------
+reparam <- list(a  = "exp(`log_a`)", log_a = NULL)
+conversions <- list(nimble = reparam,
+                    nimble_slice = reparam,
+                    jags = reparam)
+applyConversions(res, conversions)
+clearMetrics(res)
+addMetrics(res) # use default metrics
+combineMetrics(res) ## An easy way to see that it worked
+
+## ------------------------------------------------------------------------
+combineMetrics(res)
+
+## ------------------------------------------------------------------------
+registerPageComponents(
+  list(myNewComponent = 
+         list(make = "myMakeFunction",
+              fileSuffix = "_myPageComponent",
+              linkText = "My new page component.")
+       )
+  )
 

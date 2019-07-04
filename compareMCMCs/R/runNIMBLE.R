@@ -1,8 +1,13 @@
 runNIMBLE <- function(nimbleMCMCs,
                       MCMCdefs,
-                      MCMCinfo,
-                      otherInfo){
+                      modelInfo,
+                      MCMCcontrol,
+                      monitorInfo,
+                      seed,
+                      parent.frame){
   require(nimble)
+  if(missing(parent.frame))
+    parent.frame <- parent.frame()
   RmcmcFunctionList <- list()
   CmcmcFunctionList <- list()
   nNimbleMCMCs <- length(nimbleMCMCs)
@@ -10,25 +15,26 @@ runNIMBLE <- function(nimbleMCMCs,
     mcmcTag <- nimbleMCMCs[iMCMC]
     mcmcDef <- MCMCdefs[[mcmcTag]]
     if(is.function(mcmcDef)) {
-      mcmcConf <- eval(call("mcmcDef", otherInfo$Rmodel))
+      mcmcConf <- eval(call("mcmcDef", modelInfo$model))
     } else if(is.character(mcmcDef)) {
-      mcmcConf <- eval(call(mcmcDef, otherInfo$Rmodel))
+      mcmcConf <- eval(call(mcmcDef, modelInfo$model), 
+                       envir = parent.frame)
     } else {
       RmodelEnv <- new.env()
-      RmodelEnv$Rmodel <- otherInfo$Rmodel
+      RmodelEnv$model <- modelInfo$model
       mcmcConf <- eval(mcmcDef, envir = RmodelEnv)
     }
-    mcmcConf$addMonitors(otherInfo$monitorVars, print = FALSE)
-    mcmcConf$setThin(MCMCinfo$thin, print = FALSE)
+    mcmcConf$addMonitors(monitorInfo$monitorVars, print = FALSE)
+    mcmcConf$setThin(MCMCcontrol$thin, print = FALSE)
     RmcmcFunctionList[[mcmcTag]] <- buildMCMC(mcmcConf)
   }
   compile_time <- system.time({
-    Cmodel <- try(compileNimble(otherInfo$Rmodel))
+    Cmodel <- try(compileNimble(modelInfo$model))
     if(inherits(Cmodel, 'try-error')) {
       stop("There was a problem compiling the nimble model.")
     }
     CmcmcFunctionList_temp <- try(compileNimble(RmcmcFunctionList,
-                                            project = otherInfo$Rmodel))
+                                                project = modelInfo$model))
     if(inherits(CmcmcFunctionList_temp, 'try-error')) {
       stop("There was a problem compiling one or more nimble MCMCs.")
     }
@@ -39,30 +45,28 @@ runNIMBLE <- function(nimbleMCMCs,
     else
       CmcmcFunctionList <- CmcmcFunctionList_temp
   })
-
+  
   ## Record full set of model states
   allInitialModelStates <- list()
   allModelVars <- Cmodel$getVarNames(includeLogProb = TRUE)
   for(var in allModelVars)
     allInitialModelStates[[var]] <- Cmodel[[var]]
-
+  
   results <- list()
   for(iMCMC in seq_along(nimbleMCMCs)) {
     for(var in allModelVars)
       Cmodel[[var]] <- allInitialModelStates[[var]]
     mcmcTag <- nimbleMCMCs[iMCMC]
     Cmcmc <- CmcmcFunctionList[[mcmcTag]]
-    if(isTRUE(as.logical(MCMCinfo$setSeed))) {
-      if(isTRUE(MCMCinfo$setSeed)) set.seed(0)
-      else set.seed(as.numeric(MCMCinfo$setSeed))
-    }
-    timeResult <- try(system.time({ Cmcmc$run(MCMCinfo$niter) }))
+    if(!is.null(seed)) set.seed(as.numeric(seed))
+    timeResult <- try(system.time({ Cmcmc$run(MCMCcontrol$niter) }))
     if(!inherits(timeResult, 'try-error')) {
       CmvSamples <- Cmcmc$mvSamples
-      samplesArray <- as.matrix(CmvSamples, varNames = otherInfo$monitorVars)
-      samplesArray <- samplesArray[(MCMCinfo$burnin+1):floor(MCMCinfo$niter/MCMCinfo$thin),
-                                   otherInfo$monitorNodesNIMBLE,
-                                   drop=FALSE]
+      samplesArray <- as.matrix(CmvSamples, varNames = monitorInfo$monitorVars)
+      samplesArray <- samplesArray[
+        (MCMCcontrol$burnin+1):floor(MCMCcontrol$niter/MCMCcontrol$thin),
+        monitorInfo$monitors,
+        drop=FALSE]
       ## addToOutput(mcmcTag, samplesArray, timeResult)
       results[[mcmcTag]] <- MCMCresult$new(samples = samplesArray,
                                            times = list(sample = timeResult),

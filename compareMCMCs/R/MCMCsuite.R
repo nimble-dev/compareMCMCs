@@ -72,17 +72,17 @@ MCMCsuite <- function(
                     data = data,
                     inits = inits,
                     check = check)
-  MCMCinfo <- list(niter = niter,
-                   thin = thin,
-                   burnin = burnin,
-                   setSeed = setSeed,
-                   monitors = monitors)
-  results <- doMCMCs (
-    modelInfo,
-    MCMCinfo,
+  MCMCcontrol <- list(niter = niter,
+                       thin = thin,
+                       burnin = burnin)
+  results <- compareMCMCs (
+    modelInfo = modelInfo,
+    MCMCcontrol = MCMCcontrol,
     MCMCs = MCMCs,
     nimbleMCMCdefs = MCMCdefs,
     externalMCMCinfo = externalMCMCinfo,
+    seed = setSeed,
+    monitors = monitors,
     metrics = summaryStats
   )
 }

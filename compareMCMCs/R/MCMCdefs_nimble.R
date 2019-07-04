@@ -1,6 +1,6 @@
-MCMCdefs_nimble <-
-  list(nimble        = quote(configureMCMC(Rmodel)),
-       nimble_noConj = quote(configureMCMC(Rmodel, useConjugacy = FALSE)),
-       nimble_RW     = quote(configureMCMC(Rmodel, onlyRW       = TRUE)),
-       nimble_slice  = quote(configureMCMC(Rmodel, onlySlice    = TRUE)),
-       autoBlock     = quote(configureMCMC(Rmodel, autoBlock    = TRUE)))
+MCMCdefs_nimble_builtin <-
+  list(nimble        = quote(configureMCMC(model)),
+       nimble_noConj = quote(configureMCMC(model, useConjugacy = FALSE)),
+       nimble_RW     = quote(configureMCMC(model, onlyRW       = TRUE)),
+       nimble_slice  = quote(configureMCMC(model, onlySlice    = TRUE)),
+       autoBlock     = quote(configureMCMC(model, autoBlock    = TRUE)))

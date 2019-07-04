@@ -226,14 +226,14 @@ minMeanComparisonComponent <- function(comparisonResults,
   invert <- control[['invert']]  ## do seconds/ESS instead of ESS/second
   if(is.null(invert)) invert <- FALSE
 
-  bySample <- comparisonResults$bySample
+  byMCMC <- comparisonResults$byMCMC
   columnsToUse <- c('MCMC','min_efficiency_coda','mean_efficiency_coda')
-  if(!all(columnsToUse %in% colnames(bySample))) {
-    missingCols <- columnsToUse[!(columnsToUse %in% colnames(bySample))]
+  if(!all(columnsToUse %in% colnames(byMCMC))) {
+    missingCols <- columnsToUse[!(columnsToUse %in% colnames(byMCMC))]
     warnings(paste0("MCMC column names ", paste(missingCols, collapse = ','), " expected but not found for minMeanComparisonComponent."))
     return(NULL)
   }
-  efficiencyResults <- bySample[, columnsToUse]
+  efficiencyResults <- byMCMC[, columnsToUse]
   colnames(efficiencyResults) <- c('MCMC','minimum','mean')
   Efficiency <- reshape2::melt(efficiencyResults,
                                id = 'MCMC',

@@ -46,7 +46,7 @@ MCMCmetric_efficiency_coda <- function(result) {
   efficiency <- ess / result$times$sample[3]
   list(byParameter = list(ESS_coda = ess,
                           efficiency_coda = efficiency),
-       bySample = list(min_efficiency_coda = efficiency[which.min(efficiency)],  ## This way to get the min preserves the Parameter name
+       byMCMC = list(min_efficiency_coda = efficiency[which.min(efficiency)],  ## This way to get the min preserves the Parameter name
                        mean_efficiency_coda = mean(efficiency)))
 }
 

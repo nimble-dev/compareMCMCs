@@ -1,14 +1,23 @@
 #' @export
-MCMCdef_dummy <- function(runInfo, MCMCinfo, otherInfo) {
-  MCMCdef_dummy_impl(runInfo, MCMCinfo, otherInfo)
+MCMCdef_dummy <- function(MCMCinfo, 
+                          MCMCcontrol, 
+                          monitorInfo, 
+                          modelInfo) {
+  MCMCdef_dummy_impl(MCMCinfo,
+                     MCMCcontrol, 
+                     monitorInfo, 
+                     modelInfo)
 }
 
 #' @export
-MCMCdef_dummy_impl <- function(runInfo, MCMCinfo, otherInfo) {
+MCMCdef_dummy_impl <- function(MCMCinfo,
+                               MCMCcontrol, 
+                               monitorInfo, 
+                               modelInfo) {
   dummy_results <- matrix(
-    rnorm(length(otherInfo$monitorVars) * MCMCinfo$niter),
-    nrow = MCMCinfo$niter,
-    dimnames = list(NULL, otherInfo$monitorVars)
+    rnorm(length(monitorInfo$monitorVars) * MCMCcontrol$niter),
+    nrow = MCMCcontrol$niter,
+    dimnames = list(NULL, monitorInfo$monitorVars)
   )
   result <- MCMCresult$new(samples = dummy_results,
                            times = list(sample = 60))

@@ -14,7 +14,7 @@ MCMCresult <- R6Class(
     times = list(),
     ## Metrics such as ESS, efficiency, mean, median.
     ## These are organized as nested lists with three options.
-    ## Metrics in "bySample" will be organized in tidy format
+    ## Metrics in "byMCMC" will be organized in tidy format
     ## with a row for each MCMC sample. This will have a column for MCMC name
     ## and a column for each metric.  There will only be one row,
     ## but it will be easy to rbind with the same format from other MCMCs.
@@ -28,7 +28,7 @@ MCMCresult <- R6Class(
     ## Metrics in "other" will simply be stored as an arbitrary list
     ## named by the metric.  This allows arbitrarily structured
     ## metrics to be saved.
-    metrics = list(bySample = NULL,
+    metrics = list(byMCMC = NULL,
                    byParameter = NULL,
                    other = list()),
     initialize = function(...) {
@@ -42,13 +42,13 @@ MCMCresult <- R6Class(
     },
     setSamples = function(samples) {
       self$samples <<- samples
-      self$metrics <<- list(bySample = NULL,
+      self$metrics <<- list(byMCMC = NULL,
                                  byParameter = NULL,
                                  other = list())
       self$initializeMetrics(silent = TRUE)
    },
     initializeMetrics = function(silent = FALSE) {
-      if(is.null(self$metrics$byParameter) | is.null(self$metrics$bySample)) {
+      if(is.null(self$metrics$byParameter) | is.null(self$metrics$byMCMC)) {
         if(length(self$MCMC)==0) {
           if(!silent)
             warning("Trying to initializeMetrics with no MCMC name set.\n")
@@ -59,40 +59,47 @@ MCMCresult <- R6Class(
             warning("Trying to initializeMetrics with no samples set.\n")
           return(FALSE)
         }
-        params <- colnames(self$samples)
         if(is.null(self$metrics$byParameter)) {
-          self$metrics$byParameter <- data.frame(MCMC = rep(self$MCMC, length(params)),
-                                                 Parameter = params)
+          self$clearMetrics(byParameter = TRUE, byMCMC = FALSE)
         }
-        if(is.null(self$metrics$bySample)) {
-          self$metrics$bySample <- data.frame(MCMC = self$MCMC)
+        if(is.null(self$metrics$byMCMC)) {
+          self$clearMetrics(byParameter = FALSE, byMCMC = TRUE)
         }
       }
       TRUE
     },
+   clearMetrics = function(byParameter = TRUE, byMCMC = TRUE) {
+     if(byParameter) {
+       params <- colnames(self$samples)
+       self$metrics$byParameter <- data.frame(MCMC = rep(self$MCMC, length(params)),
+                                              Parameter = params)
+     }
+     if(byMCMC)
+       self$metrics$byMCMC <- data.frame(MCMC = self$MCMC)
+   },
     addMetricResult = function(metricResult) {
       if(!self$initializeMetrics()) {
         stop("Can't add metric results until metrics can be initialized.  This requires samples and a MCMC name.")
       }
-      ## metric may be a list with elements named bySample, byParameter, and/or other
-      validNames <- names(metricResult) %in% c("bySample", "byParameter", "other")
+      ## metric may be a list with elements named byMCMC, byParameter, and/or other
+      validNames <- names(metricResult) %in% c("byMCMC", "byParameter", "other")
       if(!all(validNames)) {
           iInvalidNames <- which(!validNames)
           warning(paste0('metric input with names ', paste(names(metricResult)[iInvalidNames], collapse = ', '), ' will be ignored.'))
           metricResult <- metricResult[validNames]
       }
-      if(!is.null(metricResult$bySample)) {
+      if(!is.null(metricResult$byMCMC)) {
         ## To do: add checks that metricResult is a data frame with appropriate structure
-        for(i in seq_along(metricResult$bySample)) {
-          thisMetric <- metricResult$bySample[[i]]
-          thisMetricName <- names(metricResult$bySample)[i]
+        for(i in seq_along(metricResult$byMCMC)) {
+          thisMetric <- metricResult$byMCMC[[i]]
+          thisMetricName <- names(metricResult$byMCMC)[i]
           if(is.vector(thisMetric)) {
             thisMetricList <- structure(list(thisMetric),
                                         names = thisMetricName)
           }
           ## To do: add checks that metricResult is a data frame with appropriate structure
           ## or additional checks on valid metricResult input
-          self$metrics$bySample <- merge(self$metrics$bySample, thisMetricList)
+          self$metrics$byMCMC <- merge(self$metrics$byMCMC, thisMetricList)
         }
       }
       if(!is.null(metricResult$byParameter)) {

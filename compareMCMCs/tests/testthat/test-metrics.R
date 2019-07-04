@@ -20,9 +20,7 @@ test_that("mean metric works") {
 
   MCMCmetric_mean(results$zippy)
 
-  ##undebug(addMetric)
-  debugonce(results[[1]]$addMetricResult)
-  compareMCMCs:::addMetrics(results,
+  addMetrics(results,
                             MCMCmetric_mean)
   addMetric(results,
             MCMCmetric_median)
@@ -48,9 +46,7 @@ test_that("mean metric works") {
 
   MCMCmetric_mean(results$zippy)
 
-  ##undebug(addMetric)
-  debugonce(results[[1]]$addMetricResult)
-  compareMCMCs:::addMetrics(results,
+  addMetrics(results,
             MCMCmetric_mean)
   addMetric(results,
             MCMCmetric_median)
@@ -62,13 +58,11 @@ test_that("mean metric works") {
             MCMCmetric_efficiency_coda)
 
   combo <- combineMetrics(results)
-  ##debug(posteriorSummaryComparisonComponent)
   junk <- posteriorSummaryComparisonComponent(combo)
   make_MCMC_comparison_pages(results,
                              pageComponents = list(posteriorSummary = TRUE),
                              modelName = 'test model')
 
-  ##debug(minMeanComparisonComponent)
   junk <- minMeanComparisonComponent(combo)
 
   make_MCMC_comparison_pages(results,
@@ -80,7 +74,6 @@ test_that("mean metric works") {
                                                    posteriorSummary = TRUE),
                              modelName = 'test model')
 
-  debug(allParamEfficiencyComparisonComponent)
   junk <- allParamEfficiencyComparisonComponent(combo)
 
   junk <- efficiencyDetailsComparisonComponent(combo)
