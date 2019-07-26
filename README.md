@@ -20,3 +20,10 @@ In summary, compareMCMCs provides:
 - a plugin system for new metrics for comparison among MCMCs;
 - a system for generating html pages with figures from comparison metrics, including a plugin system to provide new page components;
 - partial backward compatibility to nimble's original `MCMCsuite` and `compareMCMCs` functions.
+
+To install compareMCMCs from github (it is not currently on CRAN):
+```r
+library(devtools)
+install_github("nimble-dev/compareMCMCs", subdir = "compareMCMCs")
+```
+Or, of course, you can download and build the package, which is in directory compareMCMCs.
