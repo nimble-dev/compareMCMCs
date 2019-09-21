@@ -54,8 +54,10 @@
 #' @return A list of `MCMCresult` objects.
 #' 
 #' @export
-compareMCMCs <- function(modelInfo,
-                         MCMCcontrol, ##  niter, thin, burnin
+compareMCMCs <- function(modelInfo = list(),
+                         MCMCcontrol = list(niter = 10000,
+                                            thin = 1,
+                                            burnin = 2000), ##  niter, thin, burnin
                          MCMCs = 'nimble',
                          monitors = character(),
                          nimbleMCMCdefs = list(),
@@ -71,6 +73,12 @@ compareMCMCs <- function(modelInfo,
                          needRmodel,
                          verbose = TRUE
                          ) {
+  if(length(MCMCs) == 0) 
+    stop("No MCMCs requested.")
+  MCMCs_with_labels <- NULL
+  if(!is.null(names(MCMCs)))
+    MCMCs_with_labels <- MCMCs ## for use later to relabel results
+
   # Check for valid (niter, thin, burnin) triplet.
   niter <- if(is.null(MCMCcontrol$niter)) 10000 else MCMCcontrol$niter
   thin  <- if(is.null(MCMCcontrol$thin))  1     else MCMCcontrol$thin
@@ -126,6 +134,10 @@ compareMCMCs <- function(modelInfo,
                                    eval(parse(text=mon, keep.source=FALSE)[[1]],
                                         envir=Rmodel$isDataEnv)))
       newMonitors <- newMonitors[!dataFlags]
+      monitors <- newMonitors
+    } else {
+      newMonitors <- Rmodel$expandNodeNames(monitors,
+                                            returnScalarComponents = TRUE)
       monitors <- newMonitors
     }
   } else {
@@ -224,10 +236,13 @@ compareMCMCs <- function(modelInfo,
   }
   
   if(!is.null(metrics)) {
-    dummy <- addMetrics(results, metrics)
-    if(inherits(dummy, 'try-error'))
+    not_used <- addMetrics(results, metrics)
+    if(inherits(not_used, 'try-error'))
       warning("There was a problem calculating metrics.")
   }
 
+  ## relabel results
+  ## To be written
+  
   results
 }

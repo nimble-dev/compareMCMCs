@@ -1,4 +1,4 @@
-context("Testing copmareMCMCs")
+context("Testing compareMCMCs")
 
 test_that("compareMCMCs works", {
   mc <- nimbleCode({a ~ dnorm(0,1)})

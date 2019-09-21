@@ -47,6 +47,21 @@ MCMCresult <- R6Class(
                                  other = list())
       self$initializeMetrics(silent = TRUE)
    },
+   rename = function(newName, oldName) {
+     if(!missing(oldName))
+       if(self$MCMC != oldName)
+         return(invisible(NULL))
+     self$MCMC <- newName
+     if(!is.null(self$metrics$byParameter)) {
+       if(nrow(self$metrics$byParameter) > 0) {
+         self$metrics$byParameter$MCMC <- newName
+       }
+     }
+     if(!is.null(self$metrics$byMCMC)) {
+       if(nrow(self$metrics$byMCMC) > 0)
+         self$metrics$byMCMC$MCMC <- newName
+     }
+   },
     initializeMetrics = function(silent = FALSE) {
       if(is.null(self$metrics$byParameter) | is.null(self$metrics$byMCMC)) {
         if(length(self$MCMC)==0) {
