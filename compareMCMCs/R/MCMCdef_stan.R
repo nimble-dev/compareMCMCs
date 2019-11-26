@@ -55,7 +55,7 @@ MCMCdef_stan_impl = function(modelInfo, MCMCcontrols) {
 
   tempArray <- rstan::extract(stan_out,
                               permuted = FALSE,
-                              inc_warmup = TRUE)[, 1, ]
+                              inc_warmup = FALSE)[, 1, ]
   monitors <- MCMCcontrols$monitors
   if(!all(monitors %in% dimnames(tempArray)[[2]])) {
     missingNames <- setdiff(monitors, dimnames(tempArray)[[2]])
