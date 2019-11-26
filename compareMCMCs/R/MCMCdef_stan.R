@@ -3,6 +3,10 @@ MCMCdef_stan <- function(modelInfo, MCMCcontrols) {
 }
 
 MCMCdef_stan_impl = function(modelInfo, MCMCcontrols) {
+
+
+
+
   stanInfo <- modelInfo[['stan']]
   if(is.null(stanInfo))
     stop("stan MCMC was requested but there is no stan entry in modelInfo.")
@@ -53,9 +57,16 @@ MCMCdef_stan_impl = function(modelInfo, MCMCcontrols) {
                                   init=list(initsStan)))
   }
 
+
   tempArray <- rstan::extract(stan_out,
                               permuted = FALSE,
                               inc_warmup = FALSE)[, 1, ]
+  
+  ## sampling time, discarding warmup
+  ## SP: rstan::get_elapsed_time() returns time in a different format from system.type, so I am just putting some 0 before to maintain the format across different types of MCMCresults
+
+  timeResult <- c(0, 0, rstan::get_elapsed_time(stan_out)[2]) 
+
   monitors <- MCMCcontrols$monitors
   if(!all(monitors %in% dimnames(tempArray)[[2]])) {
     missingNames <- setdiff(monitors, dimnames(tempArray)[[2]])
@@ -65,7 +76,7 @@ MCMCdef_stan_impl = function(modelInfo, MCMCcontrols) {
   samplesArray <- array(0, dim = c(nkeep, length(monitors)))
   dimnames(samplesArray)[[2]] <- monitors
   monitorsWeHave <- intersect(monitors, dimnames(tempArray)[[2]])
-  samplesArray[, monitorsWeHave] <- tempArray[(burnin+1):floor(niter/thin),
+  samplesArray[, monitorsWeHave] <- tempArray[1::floor(niter/thin),
                                               monitorsWeHave,
                                               drop=FALSE]
   
