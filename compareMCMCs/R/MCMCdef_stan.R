@@ -86,7 +86,7 @@ MCMCdef_stan_impl <- function(MCMCinfo,
   samplesArray <- array(0, dim = c(nkeep, length(monitors)))
   dimnames(samplesArray)[[2]] <- monitors
   monitorsWeHave <- intersect(monitors, dimnames(tempArray)[[2]])
-  samplesArray[, monitorsWeHave] <- tempArray[1::floor(niter/thin),
+  samplesArray[, monitorsWeHave] <- tempArray[1:floor(niter/thin),
                                               monitorsWeHave,
                                               drop=FALSE]
   
