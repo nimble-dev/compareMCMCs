@@ -8,15 +8,15 @@ MCMCdef_stan <- function(MCMCinfo,
                     modelInfo)
 }
 
-MCMCdef_stan_impl function(MCMCinfo,
-                           MCMCcontrol, 
-                           monitorInfo, 
-                           modelInfo) {
+MCMCdef_stan_impl <- function(MCMCinfo,
+                              MCMCcontrol, 
+                              monitorInfo, 
+                              modelInfo) {
   ## SP: modelInfo is list containing
   ## model: name of .stan file containing the modelcode 
   ## data: should be already in long format?
-  ## init: optional initiali values 
-  
+  ## init: optional initial values 
+
   stanInfo <- modelInfo[['stan']]
   if(is.null(stanInfo))
     stop("stan MCMC was requested but there is no stan entry in modelInfo.")
