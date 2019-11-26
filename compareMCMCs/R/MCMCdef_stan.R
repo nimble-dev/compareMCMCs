@@ -68,5 +68,10 @@ MCMCdef_stan_impl = function(modelInfo, MCMCcontrols) {
   samplesArray[, monitorsWeHave] <- tempArray[(burnin+1):floor(niter/thin),
                                               monitorsWeHave,
                                               drop=FALSE]
-  samplesArray
+  
+  ## return MCMCresult object, with samples and time populated                                         
+  result <- MCMCresult$new(samples = samplesArray,
+                             times = list(sample = timeResult))
+  # unlink(modelFileName)
+  return(result)
 }
