@@ -60,7 +60,7 @@ MCMCdef_stan_impl <- function(MCMCinfo,
 
     compileTime <- system.time(stan_mod <- rstan::stan_model(file = stan_model))
 
-    ## SP: using the burnin as warmup but may be wrong
+    ## SP: doubling up niter since stan by default uses 
     if(is.null(initsStan)) {
       ## missing model.init.R file (stan inits file)
       runTime <- system.time(
@@ -86,10 +86,12 @@ MCMCdef_stan_impl <- function(MCMCinfo,
                                 permuted = FALSE,
                                 inc_warmup = TRUE)[, 1, ]
     
-    ## sampling time, discarding warmup
+    ### ---- to discuss ---- #
     ## SP: rstan::get_elapsed_time() returns time in a different format from system.type, so I am just putting some zeros to maintain the format across different types of MCMCresults
+    ## sampling time, discarding warmup
 
     timeResult <- c(0, 0, rstan::get_elapsed_time(stan_out)[2]) 
+    ### ---- end to discuss ---- #
 
     monitors <- MCMCcontrol$monitors
     if(!all(monitors %in% dimnames(tempArray)[[2]])) {
@@ -100,11 +102,15 @@ MCMCdef_stan_impl <- function(MCMCinfo,
     # samplesArray <- array(0, dim = c(nkeep, length(monitors)))
     # dimnames(samplesArray)[[2]] <- monitors
     
-    monitorsWeHave <- intersect(monitors, dimnames(tempArray)[[2]])
+    monitorsWeHave <- intersect(monitorInfo$monitors, dimnames(tempArray)[[2]])
+    
+    ### ---- to discuss ---- #
+    ## SP: doubling up niter since stan by default uses 
     samplesArray <- tempArray[(MCMCcontrol$niter+1):floor((2*MCMCcontrol$niter)/MCMCcontrol$thin),
                                monitorsWeHave,
                                drop=FALSE]
-    
+    ### ---- end to discuss ---- #
+
     ## return MCMCresult object, with samples and time populated                                         
     result <- MCMCresult$new(samples = samplesArray,
                                times = list(sample = timeResult))
