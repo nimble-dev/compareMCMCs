@@ -225,21 +225,39 @@ compareMCMCs <- function(modelInfo = list(),
   else
     warning("There was a problem compiling or running nimble MCMCs.")
 
-  if(length(conversions)) {
-    for(i in seq_along(results)) {
-      thisName <- names(results)[i]
-      thisConversion <- conversions[[thisName]]
-      if(!is.null(thisConversion)) {
-        applyConversions(results[[thisName]], thisConversion)
+  ## Standardize column names of samples
+  ## Make this optional, and wrap it in try()
+  for(i in seq_along(results)) {
+    catcher <- try({
+      if(!is.null(results[[i]]$samples)) {
+        orig.col.names <- colnames(results[[i]]$samples)
+        new.col.names <- unlist(lapply(orig.col.names,
+                                       function(x) deparse(parse(text = x, keep.source = FALSE)[[1]])
+                                       ))
+        colnames(results[[i]]$samples) <- new.col.names
       }
-    }
+    }) ## There is no meaningful handling of errors, but at least the function will continue and the MCMCs will not be lost.
   }
   
-  if(!is.null(metrics)) {
-    not_used <- addMetrics(results, metrics)
-    if(inherits(not_used, 'try-error'))
-      warning("There was a problem calculating metrics.")
-  }
+  catcher <- try({
+    if(length(conversions)) {
+      for(i in seq_along(results)) {
+        thisName <- names(results)[i]
+        thisConversion <- conversions[[thisName]]
+        if(!is.null(thisConversion)) {
+          applyConversions(results[[thisName]], thisConversion)
+        }
+      }
+    }
+  })
+  
+  catcher <- try({
+    if(!is.null(metrics)) {
+      not_used <- addMetrics(results, metrics)
+      if(inherits(not_used, 'try-error'))
+        warning("There was a problem calculating metrics.")
+    }
+  })
 
   ## relabel results
   ## To be written
