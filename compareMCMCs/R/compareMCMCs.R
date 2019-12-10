@@ -172,7 +172,8 @@ compareMCMCs <- function(modelInfo = list(),
   ## inits, & monitors.
   MCMCcontrol <- list(niter = niter,
                       thin = thin,
-                      burnin = burnin)
+                      burnin = burnin,
+                      seed = seed)
   monitorInfo <- list(monitorVars = monitorVars,
                       monitors = monitors)
   modelInfo$model <- Rmodel
