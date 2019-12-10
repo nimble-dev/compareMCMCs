@@ -20,7 +20,24 @@ MCMCdef_stan_impl <- function(MCMCinfo,
   ## - data: should be already in long format?
   ## - init: name of a file with initial values in the long format required by Stan
 
-  stanInfo <- modelInfo
+  ## If the user provides externalMCMCinfo = list(stan = list(file = "stan_code.stan")),
+  ## then in this function, MCMCinfo will be list(file = "stan_code.stan")
+  
+  ## Plan:
+  ## Allow two options for elements in MCMCinfo:
+  ## Simple mode:
+  ##    1. file (to be passed as argument file to rstan::stan_model)
+  ##    2. data (to be passed as argument data to rstan::sampling)  
+  ##    3. init (to be passed as argument init to rstan::sampling)
+  ## General mode:
+  ##    1. stan_model_args (to be passed as argument list to rstan::stan_model)
+  ##    2. sampling_args (to be modified and passed as argument list to rstan::sampling)
+  ##
+  ##  Note: stan has a seed argument, which we will get from MCMCcontrol$seed,
+  ##    which will have the value of the seed argument to compareMCMCs
+  ##
+  ##  
+  stanInfo <- modelInfo ## To-do: Make this come from MCMCinfo (be the same as MCMCinfo)
   
   if(is.null(stanInfo))
     stop("stan MCMC was requested but there is no stan entry in modelInfo.")
@@ -30,19 +47,17 @@ MCMCdef_stan_impl <- function(MCMCinfo,
     if(is.null(stan_model) | stan_model == '')
       stop('must provide \'model\' argument to run Stan MCMC')
     
-    dataFile <- stanInfo$data
+    dataList <- stanInfo$data
     
-    if(is.null(dataFile))
+    if(is.null(dataList))
       stop("stan entry in modelInfo is missing a data entry.")
     
-    if(!is.list(dataFile)){
+    if(!is.list(dataList)){
       
       stop("need to pass data in stan supported format")
       ## SP: fileToList not found
       # constantsAndDataStan <- fileToList(dataFile)
    
-    } else {
-      constantsAndDataStan <- dataFile
     }
 
     initFile <- stanInfo$init
@@ -65,7 +80,7 @@ MCMCdef_stan_impl <- function(MCMCinfo,
       ## missing model.init.R file (stan inits file)
       runTime <- system.time(
         stan_out <- rstan::sampling(stan_mod,
-                                    data=constantsAndDataStan,
+                                    data=dataList,
                                     chains=1,
                                     iter= 2*MCMCcontrol$niter,
                                     thin=MCMCcontrol$thin))
@@ -87,7 +102,8 @@ MCMCdef_stan_impl <- function(MCMCinfo,
                                 inc_warmup = TRUE)[, 1, ]
     
     ### ---- to discuss ---- #
-    ## SP: rstan::get_elapsed_time() returns time in a different format from system.type, so I am just putting some zeros to maintain the format across different types of MCMCresults
+    ## SP: rstan::get_elapsed_time() returns time in a different format from system.time,
+    ## so I am just putting some zeros to maintain the format across different types of MCMCresults
     ## sampling time, discarding warmup
 
     timeResult <- c(0, 0, rstan::get_elapsed_time(stan_out)[2]) 
