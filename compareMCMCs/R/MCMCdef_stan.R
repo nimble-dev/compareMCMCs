@@ -15,7 +15,7 @@ MCMCdef_stan_impl <- function(MCMCinfo,
                               MCMCcontrol, 
                               monitorInfo, 
                               modelInfo) {
-  ## SP: modelInfo is list containing
+  ## SP: modelInfo is a list containing
   ## - stan_model: name of .stan file containing the modelcode  ## SP: was only model, but then it is rewritten form compareMCMCs function
   ## - data: should be already in long format?
   ## - init: name of a file with initial values in the long format required by Stan
@@ -35,7 +35,7 @@ MCMCdef_stan_impl <- function(MCMCinfo,
   ##
   ##  Note: stan has a seed argument, which we will get from MCMCcontrol$seed,
   ##    which will have the value of the seed argument to compareMCMCs
-  ##
+  ##  Note: in rstan::sampling function the `iter` argument comprises also the number of warmup iterations
   ##  
   stanInfo <- modelInfo ## To-do: Make this come from MCMCinfo (be the same as MCMCinfo)
   
@@ -76,13 +76,14 @@ MCMCdef_stan_impl <- function(MCMCinfo,
     compileTime <- system.time(stan_mod <- rstan::stan_model(file = stan_model))
 
     ## SP: doubling up niter since stan by default uses 
-    if(is.null(initsStan)) {
+     ##  Note: in rstan::sampling function the `iter` argument comprises also the number of warmup iterations
+     if(is.null(initsStan)) {
       ## missing model.init.R file (stan inits file)
       runTime <- system.time(
         stan_out <- rstan::sampling(stan_mod,
                                     data=dataList,
                                     chains=1,
-                                    iter= 2*MCMCcontrol$niter,
+                                    iter= 2*MCMCcontrol$niter,  ## this needs to be niter + warmup
                                     thin=MCMCcontrol$thin))
     } else {
       ## we have the model.init.R file
