@@ -10,6 +10,9 @@ MCMCdef_stan <- function(MCMCinfo,
                     monitorInfo, 
                     modelInfo)
 }
+## externalMCMCinfo in compareMCMCs becomes MCMCinfo here
+## A list of information, named by external MCMC engine names, to provided to each engine.
+## If there is an external MCMC engine named "myMCMC", then a list element "myMCMC" of \code{externalMCMCinfo} will be passed to the engine as its \code{MCMCinfo} argument.
 
 MCMCdef_stan_impl <- function(MCMCinfo,
                               MCMCcontrol, 
@@ -37,66 +40,68 @@ MCMCdef_stan_impl <- function(MCMCinfo,
   ##    which will have the value of the seed argument to compareMCMCs
   ##  Note: in rstan::sampling function the `iter` argument comprises also the number of warmup iterations
   ##  
-  stanInfo <- modelInfo ## To-do: Make this come from MCMCinfo (be the same as MCMCinfo)
   
-  if(is.null(stanInfo))
-    stop("stan MCMC was requested but there is no stan entry in modelInfo.")
-  if(requireNamespace('rstan', quietly = TRUE)) {
+  	if(is.null(MCMCinfo))
+   		stop("stan MCMC was requested but there is no stan entry in modelInfo.")
+  	if(requireNamespace('rstan', quietly = TRUE)) {
     
-    stan_model <- stanInfo$stan_model
-    if(is.null(stan_model) | stan_model == '')
-      stop('must provide \'model\' argument to run Stan MCMC')
+    ## extract base elements from MCMCInfo
+    fileStan <- MCMCinfo$file
+    dataStan <- MCMCinfo$data
+    initStan <- MCMCinfo$init
+
+    if(is.null(fileStan) | fileStan == '')
+      stop('must provide \'file\' argument to run Stan MCMC')
     
-    dataList <- stanInfo$data
-    
-    if(is.null(dataList))
+    if(is.null(dataStan))
       stop("stan entry in modelInfo is missing a data entry.")
     
-    if(!is.list(dataList)){
-      
-      stop("need to pass data in stan supported format")
-      ## SP: fileToList not found
-      # constantsAndDataStan <- fileToList(dataFile)
-   
-    }
+    if(!is.list(dataStan))
+      stop("need to pass data in stan supported format")   
+ 
+    ## SP: stan has a default random initialization:
+    ## 1) should we allow for that?
+  	## 2) if yes, should we give a watrning message?
 
-    initFile <- stanInfo$init
-    if(is.null(initFile))
-      stop("stan entry in modelInfo is missing an init entry.")
-    if(!is.list(initFile)) {
-      if(file.exists(initFile)){
-        initsStan <- fileToList(initFile)
-      } else {
-        initsStan <- NULL
-      }
-    } else {
-      initsStan <- initFile
-    }
+    # if(is.null(initStan))
+    #   stop("stan entry in modelInfo is missing an init entry.")
+    
+    if(!is.list(initStan)) 
+      stop("stan entry in modelInfo is missing a data entry.")
+     
+    ## extract general elements from MCMCInfo
+  	stan_model_args <- if(!is.null(MCMCinfo$stan_model_args)) MCMCinfo$stan_model_args else list() 
+  	sampling_args   <- if(!is.null(MCMCinfo$sampling_args))   MCMCinfo$sampling_args   else list()
 
-    compileTime <- system.time(stan_mod <- rstan::stan_model(file = stan_model))
+  	## modify stan_model_args
+	stan_model_args$file <- fileStan
+    compileTime <- system.time(stan_mod <- do.call(rstan::stan_model, stan_model_args))
 
-    ## SP: doubling up niter since stan by default uses 
-     ##  Note: in rstan::sampling function the `iter` argument comprises also the number of warmup iterations
-     if(is.null(initsStan)) {
-      ## missing model.init.R file (stan inits file)
+  	## modify sampling args
+	sampling_args$object <- stan_mod ## object of class stanmodel
+    sampling_args$data   <- dataStan
+    sampling_args$chains <- 1
+
+    ##  Note: in rstan::sampling function the `iter` argument comprises also the number of warmup iterations
+    sampling_args$iter   <- MCMCcontrol$niter*2  ## SP: temp choice, using default stan warmup (half of niter)
+    sampling_args$warmup <- floor(MCMCcontrol$niter/2)
+    sampling_args$thin   <- MCMCcontrol$thin
+    sampling_args$seed   <- MCMCcontrol$seed
+
+
+    if(is.null(initsStan)) {
+      ## missing init (uses stan random initialization)
+      ## 
       runTime <- system.time(
-        stan_out <- rstan::sampling(stan_mod,
-                                    data=dataList,
-                                    chains=1,
-                                    iter= 2*MCMCcontrol$niter,  ## this needs to be niter + warmup
-                                    thin=MCMCcontrol$thin))
+        stan_out <- do.call(rstan::sampling, sampling_args))
     } else {
+    	sampling_args$init   <- initStan
+
       ## we have the model.init.R file
       ## this one includes inits = ...
       runTime <- system.time(
-        stan_out <- rstan::sampling(stan_mod,
-                                    data=constantsAndDataStan,
-                                    chains=1,
-                                    iter= 2*MCMCcontrol$niter,
-                                    thin=MCMCcontrol$thin,
-                                    init=list(initsStan)))
+        stan_out <- do.call(rstan::sampling, sampling_args))
     }
-
 
     tempArray <- rstan::extract(stan_out,
                                 permuted = FALSE,
