@@ -96,7 +96,8 @@ MCMCdef_stan_impl <- function(MCMCinfo,
     }
 
     ## SP: should we include warmup samples?  
-    tempArray <- rstan::extract(stan_out,
+    tempArray <- rstan::extract(stan_out, 
+    							pars = monitorInfo$monitors, 
                                 permuted = FALSE,
                                 inc_warmup = FALSE)[, 1, ]
     
@@ -107,20 +108,24 @@ MCMCdef_stan_impl <- function(MCMCinfo,
     sampleTime <- c(0, 0, rstan::get_elapsed_time(stan_out)[2]) 
     totalTime  <- runTime
 
-    monitors <- monitorInfo$monitors
+    ##---------------------------------------##
+    ## SP: choose how to deal with monitors
+    # monitors <- monitorInfo$monitors
     
-    if(!all(monitors %in% dimnames(tempArray)[[2]])) {
-      missingNames <- setdiff(monitors, dimnames(tempArray)[[2]])
-      warning(paste0('Stan output is missing values for: ',
-                     paste0(missingNames,collapse=', ')))
-    }
-    dimnames(samplesArray)[[2]] <- monitors
+    # if(!all(monitors %in% dimnames(tempArray)[[2]])) {
+    #   missingNames <- setdiff(monitors, dimnames(tempArray)[[2]])
+    #   warning(paste0('Stan output is missing values for: ',
+    #                  paste0(missingNames,collapse=', ')))
+    # }
+    # dimnames(samplesArray)[[2]] <- monitors
     
-    monitorsWeHave <- intersect(monitorInfo$monitors, dimnames(tempArray)[[2]])
+    # monitorsWeHave <- intersect(monitorInfo$monitors, dimnames(tempArray)[[2]])
     
-    samplesArray <- tempArray[, monitorsWeHave,
-                               drop=FALSE]
+    # samplesArray <- tempArray[, monitorsWeHave,
+    #                            drop=FALSE]
+    ##---------------------------------------##
 
+    samplesArray <- tempArray
 
     ## return MCMCresult object, with samples and time populated                                         
     result <- MCMCresult$new(samples = samplesArray,
