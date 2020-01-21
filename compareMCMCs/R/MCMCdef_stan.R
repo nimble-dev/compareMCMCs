@@ -109,7 +109,7 @@ MCMCdef_stan_impl <- function(MCMCinfo,
     totalTime  <- runTime
 
     ##---------------------------------------##
-    ## SP: choose how to deal with monitors
+    ## SP: choose how to deal with monitors; to make this chunk of code working
     # monitors <- monitorInfo$monitors
     
     # if(!all(monitors %in% dimnames(tempArray)[[2]])) {
