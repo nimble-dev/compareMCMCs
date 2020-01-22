@@ -127,9 +127,10 @@ MCMCdef_stan_impl <- function(MCMCinfo,
 
     samplesArray <- tempArray
 
-    ## return MCMCresult object, with samples and time populated                                         
+    ## return MCMCresult object, with samples and time populated
+    ## SP 'sample' is the default tilme                                         
     result <- MCMCresult$new(samples = samplesArray,
-                               times = list(sample = sampleTime, total = totalTime, compile = compileTime))
+                               times = list(sample = totalTime, sampling = sampleTime, compile = compileTime))
     return(result)
   } else {
     stop("stan MCMC was requested but the rstan package is not installed.")
