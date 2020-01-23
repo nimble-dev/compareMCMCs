@@ -69,7 +69,7 @@ MCMCdef_stan_impl <- function(MCMCinfo,
 
     ##  Note: in rstan::sampling function the `iter` argument comprises also the number of warmup iterations
     sampling_args$iter   <- MCMCcontrol$niter*2  ## SP: using default stan warmup (half of niter)
-    sampling_args$warmup <- floor(MCMCcontrol$niter/2)
+    sampling_args$warmup <- MCMCcontrol$niter
     sampling_args$thin   <- MCMCcontrol$thin
     sampling_args$seed   <- MCMCcontrol$seed
     
