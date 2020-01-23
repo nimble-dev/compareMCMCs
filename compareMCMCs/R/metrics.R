@@ -77,10 +77,6 @@ MCMCmetric_efficiency_coda_sample_total <- function(result) {
 }
 
 
-MCMCmetric_efficiency_stan
-
-MCMCmetric_efficiency_stan
-
 
 compareMCMCs_registered_metrics <- new.env()
 
