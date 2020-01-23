@@ -1,4 +1,4 @@
-## calculators for basic MCMC metrics
+# calculators for basic MCMC metrics
 #' @export
 MCMCmetric_mean <- function(result) {
   ## Results can be a single MCMCresult or a list of them.
@@ -37,18 +37,50 @@ MCMCmetric_CI95upp <- function(result) {
   list(byParameter = list(CI95_upp = upp))
 }
 
+MCMCmetric_efficiency_internal <- function(result,
+                                           effectiveSizeFun,
+                                           timeName,
+                                           suffix) {
+  
+  ess <- effectiveSizeFun(result$samples)
+  efficiency <- ess / result$times[[timeName]]
+  byParamNames <- paste0(c("ESS", "efficiency"), suffix)
+  byMCMCNames <- paste0(c("min_efficiency", "mean_efficiency"), suffix)
+  list(byParameter = structure(list(ess,
+                                    efficiency),
+                               names = byParamNames),
+       byMCMC = structure(list(efficiency[which.min(efficiency)],  ## This way to get the min preserves the Parameter name
+                               mean(efficiency)),
+                          names = byMCMCNames)
+  )
+}
 
 #' @export
 MCMCmetric_efficiency_coda <- function(result) {
   if(!requireNamespace('coda', quietly = TRUE))
     stop('MCMCmetric_ESScoda requires coda package, but it is not installed.')
   ess <- coda::effectiveSize(result$samples)
-  efficiency <- ess / result$times$sample[3]
+  efficiency <- ess / result$times$sample
   list(byParameter = list(ESS_coda = ess,
                           efficiency_coda = efficiency),
        byMCMC = list(min_efficiency_coda = efficiency[which.min(efficiency)],  ## This way to get the min preserves the Parameter name
                        mean_efficiency_coda = mean(efficiency)))
 }
+
+MCMCmetric_efficiency_coda_sample_total <- function(result) {
+  if(!requireNamespace('coda', quietly = TRUE))
+    stop('MCMCmetric_ESScoda requires coda package, but it is not installed.')
+  MCMCmetric_efficiency_internal(result,
+                                 coda::effectiveSize,
+                                 'sample_total',
+                                 '_coda_total')
+}
+
+
+MCMCmetric_efficiency_stan
+
+MCMCmetric_efficiency_stan
+
 
 compareMCMCs_registered_metrics <- new.env()
 

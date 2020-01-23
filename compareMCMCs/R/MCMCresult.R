@@ -10,7 +10,13 @@ MCMCresult <- R6Class(
     samples = NULL,
     ## Properties such as information about the MCMC runs
     properties = list(),
-    ## Times related to setup (e.g. compilation) and running of an MCMC
+    ## Times related to setup (e.g. compilation) and running of an MCMC.
+    ## An MCMC engine should typically provide the following times entries:
+    ## setup:         Time to get ready to run, such as nimble or stan compile times
+    ## sample_warmup: Time on burnin or warmpup samples
+    ## sample:        Time on samples to be saved
+    ## sample_total:  Total sampling time, typically sample_warumup + sample
+    ## total:         Total time for everything, typically setup + sample_total
     times = list(),
     ## Metrics such as ESS, efficiency, mean, median.
     ## These are organized as nested lists with three options.

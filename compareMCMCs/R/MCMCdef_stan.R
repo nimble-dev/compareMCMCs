@@ -68,10 +68,14 @@ MCMCdef_stan_impl <- function(MCMCinfo,
     sampling_args$chains <- 1
 
     ##  Note: in rstan::sampling function the `iter` argument comprises also the number of warmup iterations
-    sampling_args$iter   <- MCMCcontrol$niter*2  ## SP: using default stan warmup (half of niter)
-    sampling_args$warmup <- MCMCcontrol$niter
-    sampling_args$thin   <- MCMCcontrol$thin
-    sampling_args$seed   <- MCMCcontrol$seed
+    if(is.null(sampling_args$warmup))
+      sampling_args$warmup <- MCMCcontrol$niter
+    if(is.null(sampling_args$iter))
+      sampling_args$iter   <- MCMCcontrol$niter + sampling_args$warmup  ## SP: using default stan warmup (half of niter)
+    if(is.null(sampling_args$thin))
+      sampling_args$thin   <- MCMCcontrol$thin
+    if(is.null(sampling_args$seed))
+      sampling_args$seed   <- MCMCcontrol$seed
     
     ## SP: we could have the monitors passed to rstan:::sampling function
     # sampling_args$pars <- MCMCcontrol$monitors
@@ -81,23 +85,16 @@ MCMCdef_stan_impl <- function(MCMCinfo,
     ## SP: stan has a default random initialization:
     ## 1) should we allow for that? 
   	## 2) if yes, should we give a warning message?
+
+    if(!is.null(initStan))
+      sampling_args$init   <- initStan
     
-    if(is.null(initStan)) {
-      ## missing init (uses stan random initialization)
-      runTime <- system.time(
-        stan_out <- do.call(rstan::sampling, sampling_args))
-    } else {
-    	sampling_args$init   <- initStan
-
-      ## we have the model.init.R file
-      ## this one includes inits = ...
-      runTime <- system.time(
-        stan_out <- do.call(rstan::sampling, sampling_args))
-    }
-
+    runTime <- system.time(
+      stan_out <- do.call(rstan::sampling, sampling_args))
+    
     ## SP: should we include warmup samples?  
-    tempArray <- rstan::extract(stan_out, 
-    							pars = monitorInfo$monitors, 
+    samplesArray <- rstan::extract(stan_out, 
+                                pars = monitorInfo$monitorsVars,
                                 permuted = FALSE,
                                 inc_warmup = FALSE)[, 1, ]
     
@@ -105,32 +102,13 @@ MCMCdef_stan_impl <- function(MCMCinfo,
     ## I am just adding some zeros to maintain the format across different types of MCMCresults
     ## sampling time, discarding warmup
  
-    sampleTime <- c(0, 0, rstan::get_elapsed_time(stan_out)[2]) 
+    sampleTime <- rstan::get_elapsed_time(stan_out)[2]
     totalTime  <- runTime
-
-    ##---------------------------------------##
-    ## SP: choose how to deal with monitors; to make this chunk of code working
-    # monitors <- monitorInfo$monitors
-    
-    # if(!all(monitors %in% dimnames(tempArray)[[2]])) {
-    #   missingNames <- setdiff(monitors, dimnames(tempArray)[[2]])
-    #   warning(paste0('Stan output is missing values for: ',
-    #                  paste0(missingNames,collapse=', ')))
-    # }
-    # dimnames(samplesArray)[[2]] <- monitors
-    
-    # monitorsWeHave <- intersect(monitorInfo$monitors, dimnames(tempArray)[[2]])
-    
-    # samplesArray <- tempArray[, monitorsWeHave,
-    #                            drop=FALSE]
-    ##---------------------------------------##
-
-    samplesArray <- tempArray
 
     ## return MCMCresult object, with samples and time populated
     ## SP 'sample' is the default tilme                                         
     result <- MCMCresult$new(samples = samplesArray,
-                               times = list(sample = totalTime, sampling = sampleTime, compile = compileTime))
+                             times = list(sample = totalTime, sampling = sampleTime, compile = compileTime))
     return(result)
   } else {
     stop("stan MCMC was requested but the rstan package is not installed.")

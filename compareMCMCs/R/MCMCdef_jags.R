@@ -35,7 +35,7 @@ MCMCdef_jags_impl <- function(MCMCinfo,
       monitorNodesBUGS,
       drop=FALSE]
     result <- MCMCresult$new(samples = samplesArray,
-                             times = list(sample = timeResult))
+                             times = list(sample = timeResult[3]))
     unlink(modelFileName)
     return(result)
   } else {
