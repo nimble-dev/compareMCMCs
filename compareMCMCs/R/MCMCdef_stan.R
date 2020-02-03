@@ -94,7 +94,7 @@ MCMCdef_stan_impl <- function(MCMCinfo,
     
     ## SP: should we include warmup samples?  
     samplesArray <- rstan::extract(stan_out, 
-                                pars = monitorInfo$monitorsVars,
+                                pars = monitorInfo$monitorVars,
                                 permuted = FALSE,
                                 inc_warmup = FALSE)[, 1, ]
     
