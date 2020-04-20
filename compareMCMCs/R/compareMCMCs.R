@@ -83,12 +83,15 @@ compareMCMCs <- function(modelInfo = list(),
   niter <- if(is.null(MCMCcontrol$niter)) 10000 else MCMCcontrol$niter
   thin  <- if(is.null(MCMCcontrol$thin))  1     else MCMCcontrol$thin
   burnin <- if(is.null(MCMCcontrol$burnin)) 2000 else MCMCcontrol$burnin
-  nkeep <- floor(niter/thin) - burnin
-  if(nkeep < 0)
-    stop(paste0('niter/thin - burnin is negative.\n',
-                'This would not retain any samples.\n',
-                'Try increasing niter, or decreasing burnin.'))
-  burninFraction <- burnin / (nkeep + burnin)
+  
+  ## SP: burnin is discarder pre thinning form nimble 0-6-11
+  # nkeep <- floor(niter/thin) - burnin    ## wrong
+  # if(nkeep < 0)
+  #   stop(paste0('niter/thin - burnin is negative.\n',
+  #               'This would not retain any samples.\n',
+  #               'Try increasing niter, or decreasing burnin.'))
+  # burninFraction <- burnin / (nkeep + burnin)
+  
   ## Build the R model to use at least as a reference for model parameters.
   ## Later we could modify this so that the model is only built if it is really needed.
   ## Or we could at least set calculate = FALSE and then do a calculate
