@@ -27,3 +27,9 @@ library(devtools)
 install_github("nimble-dev/compareMCMCs", subdir = "compareMCMCs")
 ```
 Or, of course, you can download and build the package, which is in directory compareMCMCs.
+
+To use `compareMCMCs` plugin for JAGS you first need to install JAGS. See [JAGS homepage][http://mcmc-jags.sourceforge.net/] for platform based instructions. The plugin also need the `rjags` package:
+
+```
+install.packages("rjags")
+```
