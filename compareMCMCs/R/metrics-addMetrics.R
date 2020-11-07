@@ -1,7 +1,35 @@
+#' Manipulate metrics in one or more `MCMCresult` object(s)
+#' 
+#' Clear metrics or add metrics to MCMC results.
+#' 
+#' @param results an `MCMCresult` object or list of `MCMCresult` objects.
+#' @param byParameter `TRUE` or `FALSE`: whether to clear `byParameter` metrics
+#' @param byMCMC `TRUE` or `FALSE`: whether to clear `byMCMC` metrics
+#' @param metrics character vector of metric names to add.  See \code{\link{metrics}}.
+#' 
+#' @details 
+#' These functions provide ways to manipulate the collection of metrics inside one or more 
+#' `MCMCresult` objects.
+#' 
+#' The `MCMCresult` class is fairly simple.  One can also modify contents of an
+#' `MCMCresult` object using class methods or direct manipulation of contents.
+#' 
+#' Metrics are organized as "by parameter", when there is one result for each parameter (column)
+#' of MCMC output, and "by MCMC", when there is one result for an entire MCMC sample (across all parameters).
+#' 
+#' `clearMetrics` clears all metrics by parameter, by MCMC, or both.
+#' 
+#' `addMetrics` populates a set of metrics.  See vignette for more information.
+#' 
+#' @name modifyMetrics
+
+#' @rdname modifyMetrics
 #' @export
 clearMetrics <- function(results, 
                          byParameter = TRUE,
                          byMCMC = TRUE) {
+  if(!is.list(results))
+    results <- list(results)
   for(iR in seq_along(results)) {
   results[[iR]]$clearMetrics(byParameter = byParameter,
                              byMCMC = byMCMC)
@@ -9,6 +37,7 @@ clearMetrics <- function(results,
   invisible(NULL)
 }
 
+#' @rdname modifyMetrics
 #' @export
 addMetrics <- function(results,
                        metrics = c('mean',
@@ -58,6 +87,15 @@ addMetrics <- function(results,
   invisible(NULL)
 }
 
+#' Combine all metrics from a list of `MCMCresult` objects.
+#' 
+#' This is useful for seeing results from multiple MCMC engines compactly.
+#' 
+#' @param results a list of `MCMCresult` objects
+#' 
+#' @value A list with elements `byParameter` and `byMCMC`.  Each element combines 
+#' the corresponding elements for each `MCMCresult` object in the `results` argument.
+#' 
 #' @export
 combineMetrics <- function(results) {
   byParameter <-  do.call('rbind',

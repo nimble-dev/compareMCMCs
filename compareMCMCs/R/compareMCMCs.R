@@ -5,15 +5,14 @@
 #'
 #' @param modelInfo A list of nimble model-specification information,
 #'     which may be relevant for JAGS, WinBUGS and/or OpenBUGS as
-#'     well. \code{modelInfo} named elements can include `code` (model
+#'     well. To provide information for a different MCMC engine, see argument
+#'     \code{externalMCMCinfo}.  Named elements in \code{modelInfo} can include `code` (model
 #'     code as returned from `nimbleCode`), `data` (a list with data),
 #'     `constants` (a list with data and/or constants), and `inits` (a
 #'     list of initial values).  See `nimbleModel` in package nimble
 #'     for for information on these arguments.  For JAGS, WinBUGS and
-#'     OpenBUGS, many models can also be run from the same
+#'     OpenBUGS, many models can be run from the same
 #'     specification since they use nearly the same model language.
-#'     For a different MCMC engine, see argument
-#'     \code{externalMCMCinfo}.
 #' 
 #' @param MCMCcontrol A list with fields `niter` (number of
 #'     iterations), `thin` (thinning interval), and `burnin` (number
@@ -25,31 +24,40 @@
 #'     "OpenBUGS", "Stan", one of several nimble special cases
 #'     (see details below), custom nimble
 #'     sampler configurations provided via argument
-#'     \code{nimbleMCMCdefs}, and external MCMCs registered via
+#'     \code{nimbleMCMCdefs}, and external MCMC engines registered via
 #'     \code{\link{registerMCMCengine}}.
 #'
 #' @param nimbleMCMCdefs A list of information for custom sampler configurations in nimble.  See Details below.
 #'
-#' @param externalMCMCinfo A list of information, named by external MCMC engine names, to provided to each engine.  If there is an external MCMC engine named "myMCMC", then a list element "myMCMC" of \code{externalMCMCinfo} will be passed to the engine as its \code{MCMCinfo} argument.
+#' @param externalMCMCinfo A list of arbitrary information for external MCMC engines, 
+#' named by engine names.  If there is an external MCMC engine 
+#'  named "myMCMC", then a list element `myMCMC`` of
+#'   \code{externalMCMCinfo} will be passed to the engine as its \code{MCMCinfo}
+#'    argument.
 #'
 #' @param metrics Either a character vector of registered metric names
 #'     to apply to each sample, or a list of elements with either
 #'     metric names or metric functions to apply to each sample.  See
-#'     \code{addMetrics} for more information.  A useful set of
+#'     \code{\link{addMetrics}} for more information.  A useful set of
 #'     default metrics is provided.
 #'
-#' @param seed a numeric value passed to `set.seed` to set the
+#' @param seed an (arbitrary) numeric value passed to `set.seed` to set the
 #'     random-number generator seed before calling each MCMC engine.
-#'     If NULL, no seed is set.
+#'     If NULL, no seed is set.  To obtain identical results from one call of `compareMCMCs`
+#'     to the next, use identical `seed` values.
 #'
 #' @param monitors A vector of names of parameters to record in MCMC samples.
 #' 
 #' @details The special cases provided for the `MCMCs` argument
-#'     include: "nimble_noConj", using adaptive random-walk
+#'     include: 
+#'     
+#' - "nimble_noConj": use adaptive random-walk
 #'     Metropolis-Hastings (ARWMH) samplers in place of Gibbs
-#'     (conjugate) samplers; "nimble_RW", using all ARWMH samplers;
-#'     "nimble_slice", using all slice samplers; and "autoBlock",
-#'     using nimble's automatic blocking algorithm.
+#'     (conjugate) samplers.
+#' - "nimble_RW": use all adaptive random-walk Metropolis-Hastings samplers.
+#' - "nimble_slice": use all slice samplers.
+#'
+#' See package vignette for examples.
 #'
 #' @return A list of `MCMCresult` objects.
 #' 

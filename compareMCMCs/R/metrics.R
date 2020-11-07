@@ -1,4 +1,40 @@
 # calculators for basic MCMC metrics
+
+#' Built-in metrics for `MCMCresult` objects
+#' 
+#' These functions are normally called via compareMCMCs or addMetric.
+#' 
+#' @param result An MCMCresult object, normally a list element returned by \code{\link{compareMCMCs}}
+#' 
+#' @details 
+#' 
+#' A metric is a summary of MCMC output.  The summary may include results for each parameter, 
+#' for each MCMC sample (across all parameters), and/or by arbitrary list. The last option is 
+#' not used by any built-in metrics.
+#' 
+#' The built-in metrics include:
+#' 
+#' - mean : mean for each parameter
+#' - median : median for each parameter
+#' - sd : standard deviation for each parameter
+#' - CI95 : both ends of 95% credible interval, a combination of CI95low and CI95upp
+#' - CI95low : lower end of 95% credible interval
+#' - CI95upp : upper end of 95% credible interval
+#' - efficiency or (synonomously) efficiency_coda : effective sample size (ESS) and efficiency (ESS / computation time)
+#' 
+#' @return A list that may contain elements named:
+#' 
+#' - `byParameter`: A named list of vectors.  In each vector, 
+#' the elements correspond to parameters.  The list names
+#' will become names in any outputs.
+#' - `byMCMC`: A named list of numbers.
+#' 
+#' It is also valid to return a list of such lists.
+#' 
+#' @name metrics
+NULL
+
+#' @rdname metrics
 #' @export
 MCMCmetric_mean <- function(result) {
   ## Results can be a single MCMCresult or a list of them.
@@ -6,18 +42,21 @@ MCMCmetric_mean <- function(result) {
   list(byParameter = list(mean = means))
 }
 
+#' @rdname metrics
 #' @export
 MCMCmetric_median <- function(result) {
   res <- apply(result$samples, 2, median)
   list(byParameter = list(median = res))
 }
 
+#' @rdname metrics
 #' @export
 MCMCmetric_sd <- function(result) {
   res <- apply(result$samples, 2, sd)
   list(byParameter = list(sd = res))
 }
 
+#' @rdname metrics
 #' @export
 MCMCmetric_CI95 <- function(result) {
   c(MCMCmetric_CI95low(result),
@@ -25,12 +64,14 @@ MCMCmetric_CI95 <- function(result) {
   )
 }
 
+#' @rdname metrics
 #' @export
 MCMCmetric_CI95low <- function(result) {
   low <- apply(result$samples, 2, quantile, probs = 0.025)
   list(byParameter = list(CI95_low = low))
 }
 
+#' @rdname metrics
 #' @export
 MCMCmetric_CI95upp <- function(result) {
   upp <- apply(result$samples, 2, quantile, probs = 0.975)
@@ -55,6 +96,7 @@ MCMCmetric_efficiency_internal <- function(result,
   )
 }
 
+#' @rdname metrics
 #' @export
 MCMCmetric_efficiency_coda <- function(result) {
   if(!requireNamespace('coda', quietly = TRUE))
