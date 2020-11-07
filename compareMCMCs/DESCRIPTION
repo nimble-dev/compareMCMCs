@@ -4,6 +4,7 @@ Title: Compare MCMC efficiency from nimble and/or other MCMC engines
 Version: 0.5.0
 Authors@R: c(
     person("Perry", "de Valpine", , "pdevalpine@berkeley.edu", role = c("aut", "cre")),
+    person("Sally", "Paganin", role = "aut"),
     person("Daniel", "Turek", role = "aut"),
     person("Christopher", "Paciorek", role = "aut")
     )
@@ -20,4 +21,5 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0
+Roxygen: list(markdown = TRUE)

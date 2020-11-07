@@ -69,7 +69,7 @@ runNIMBLE <- function(nimbleMCMCs,
         drop=FALSE]
       ## addToOutput(mcmcTag, samplesArray, timeResult)
       results[[mcmcTag]] <- MCMCresult$new(samples = samplesArray,
-                                           times = list(sample = timeResult),
+                                           times = list(sample = timeResult[3]),
                                            MCMC = mcmcTag)
     } else {
       warning(paste0("There was a problem running ", mcmcTag,"."))
