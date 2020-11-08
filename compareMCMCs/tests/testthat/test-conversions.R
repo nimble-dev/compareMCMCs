@@ -1,7 +1,7 @@
 context("applyConversions works")
 
 testthat("conversion specifications work", {
-  library(compareMCMCs)
+#  library(compareMCMCs)
   
   samples <- matrix(1:50, ncol = 10)
   colnames(samples) <- paste0("a[", 1:10, "]")

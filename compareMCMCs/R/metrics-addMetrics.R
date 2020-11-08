@@ -16,7 +16,8 @@ addMetrics <- function(results,
                                    'sd',
                                    'CI95_low',
                                    'CI95_upp',
-                                   'efficiency_coda')) {
+                                   'efficiency_coda'),
+                       options = list()) {
   if(!require(reshape2)) stop(paste0('Package reshape2 is required to add metrics. ',
                                      'Please install reshape2.'))
   if(!is.list(results))
@@ -39,7 +40,8 @@ addMetrics <- function(results,
       thisMetricName <- paste0("#", iM)
     }
     for(iR in seq_along(results)) {
-      metric <- try(thisMetric(results[[iR]]))
+      metric <- try(thisMetric(results[[iR]],
+                    options[[thisMetricName]]))
       if(inherits(metric, "try-error")) {
         warning(paste0("Problem applying metric ",
                        thisMetricName,
@@ -59,7 +61,7 @@ addMetrics <- function(results,
 }
 
 #' @export
-combineMetrics <- function(results) {
+combineMetrics <- function(results, include_times = FALSE) {
   byParameter <-  do.call('rbind',
                           c(lapply(results,
                                    function(x)
@@ -72,6 +74,18 @@ combineMetrics <- function(results) {
                                  x$metrics$byMCMC),
                         list(make.row.names = FALSE))
                       )
-  list(byParameter = byParameter,
-       byMCMC = byMCMC)
+  if(include_times) {
+    times <- do.call('rbind',
+                     c(lapply(results,
+                              function(x) {
+                                  ans <- x$times[['sampling']]
+                              }))
+                     )
+    colnames(times) <- "sampling time"
+  }
+  ans <- list(byParameter = byParameter,
+              byMCMC = byMCMC)
+  if(include_times)
+    ans$times <- times
+  ans
 }

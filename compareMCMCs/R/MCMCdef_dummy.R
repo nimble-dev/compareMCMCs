@@ -23,9 +23,9 @@ MCMCdef_dummy_impl <- function(MCMCinfo,
     nrow = MCMCcontrol$niter,
     dimnames = list(NULL, monitorInfo$monitorVars)
   )
-  dummytime <- system.time({})
+  dummytime <- 0.1
   dummytime[1:5] <- c(60, 60, 60, 0, 0)
   result <- MCMCresult$new(samples = dummy_results,
-                           times = list(sample = dummytime))
+                           times = list(sampling = dummytime))
   return(result)
 }

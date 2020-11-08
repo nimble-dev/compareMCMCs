@@ -68,6 +68,7 @@ compareMCMCs <- function(modelInfo = list(),
                                      'CI95_low',
                                      'CI95_upp',
                                      'efficiency_coda'),
+                         metricOptions = list(),
                          conversions = list(),
                          seed = NULL,
                          needRmodel,
@@ -253,7 +254,7 @@ compareMCMCs <- function(modelInfo = list(),
   
   catcher <- try({
     if(!is.null(metrics)) {
-      not_used <- addMetrics(results, metrics)
+      not_used <- addMetrics(results, metrics, metricOptions)
       if(inherits(not_used, 'try-error'))
         warning("There was a problem calculating metrics.")
     }

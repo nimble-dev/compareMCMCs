@@ -25,7 +25,6 @@ runNIMBLE <- function(nimbleMCMCs,
       mcmcConf <- eval(mcmcDef, envir = RmodelEnv)
     }
     mcmcConf$addMonitors(monitorInfo$monitorVars, print = FALSE)
-    mcmcConf$setThin(MCMCcontrol$thin, print = FALSE)
     RmcmcFunctionList[[mcmcTag]] <- buildMCMC(mcmcConf)
   }
   compile_time <- system.time({
@@ -59,22 +58,20 @@ runNIMBLE <- function(nimbleMCMCs,
     mcmcTag <- nimbleMCMCs[iMCMC]
     Cmcmc <- CmcmcFunctionList[[mcmcTag]]
     if(!is.null(seed)) set.seed(as.numeric(seed))
-    timeResult <- try(system.time({ Cmcmc$run(MCMCcontrol$niter) }))
+    timeResult <- try(system.time({ Cmcmc$run(MCMCcontrol$niter, 
+                                              nburnin = MCMCcontrol$burnin,
+                                              thin = MCMCcontrol$thin) }))
     if(!inherits(timeResult, 'try-error')) {
       CmvSamples <- Cmcmc$mvSamples
       samplesArray <- as.matrix(CmvSamples, varNames = monitorInfo$monitorVars)
-      samplesArray <- samplesArray[
-        (MCMCcontrol$burnin+1):floor(MCMCcontrol$niter/MCMCcontrol$thin),
-        monitorInfo$monitors,
-        drop=FALSE]
-      ## addToOutput(mcmcTag, samplesArray, timeResult)
+      samplesArray <- samplesArray[, monitorInfo$monitors, drop=FALSE]
       results[[mcmcTag]] <- MCMCresult$new(samples = samplesArray,
-                                           times = list(sample = timeResult),
+                                           times = list(sampling = timeResult[3], setup = compile_time[3]),
                                            MCMC = mcmcTag)
     } else {
       warning(paste0("There was a problem running ", mcmcTag,"."))
     }
-    ## For compile_time, we can provide error message if there are multiple nimble MCMCs,
+    ## For compile_time, we could give a message if there are multiple nimble MCMCs,
     ## since their compile_time is bundled together.
   }
   results

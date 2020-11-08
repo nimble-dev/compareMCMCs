@@ -21,15 +21,14 @@ test_that("mean metric works") {
   MCMCmetric_mean(results$zippy)
 
   addMetrics(results,
-                            MCMCmetric_mean)
-  addMetric(results,
-            MCMCmetric_median)
-  addMetric(results,
-            MCMCmetric_CI95)
-
-
+             MCMCmetric_mean)
+  addMetrics(results,
+             MCMCmetric_median)
+  addMetrics(results,
+             MCMCmetric_CI95)
+  
   ## with two variables
-    results <- list(
+  results <- list(
     zippy = MCMCresult$new(MCMC = 'zippy'),
     jumpy = MCMCresult$new(MCMC = 'jumpy')
   )
@@ -47,23 +46,23 @@ test_that("mean metric works") {
   MCMCmetric_mean(results$zippy)
 
   addMetrics(results,
-            MCMCmetric_mean)
-  addMetric(results,
-            MCMCmetric_median)
-  addMetric(results,
-            MCMCmetric_CI95)
-
+             MCMCmetric_mean)
+  addMetrics(results,
+             MCMCmetric_median)
+  addMetrics(results,
+             MCMCmetric_CI95)
+  
   MCMCmetric_efficiency_coda(results$zippy)
-  addMetric(results,
-            MCMCmetric_efficiency_coda)
+  addMetrics(results,
+             MCMCmetric_efficiency_coda)
 
   combo <- combineMetrics(results)
-  junk <- posteriorSummaryComparisonComponent(combo)
+  junk <- compareMCMCs:::posteriorSummaryComparisonComponent(combo)
   make_MCMC_comparison_pages(results,
-                             pageComponents = list(posteriorSummary = TRUE),
+                             pageComponents = list(timing = TRUE, posteriorSummary = TRUE),
                              modelName = 'test model')
 
-  junk <- minMeanComparisonComponent(combo)
+  junk <- compareMCMCs:::minMeanComparisonComponent(combo)
 
   make_MCMC_comparison_pages(results,
                              pageComponents = list(efficiencySummary = TRUE),
@@ -74,10 +73,10 @@ test_that("mean metric works") {
                                                    posteriorSummary = TRUE),
                              modelName = 'test model')
 
-  junk <- allParamEfficiencyComparisonComponent(combo)
+  junk <- compareMCMCs:::allParamEfficiencyComparisonComponent(combo)
 
-  junk <- efficiencyDetailsComparisonComponent(combo)
-  junk <- minMeanAllComparisonComponent(combo)
+  junk <-  compareMCMCs:::efficiencyDetailsComparisonComponent(combo)
+  junk <- compareMCMCs:::minMeanAllComparisonComponent(combo)
   make_MCMC_comparison_pages(results,
                              modelName = 'test model')
 }

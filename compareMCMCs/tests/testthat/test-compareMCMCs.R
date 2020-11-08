@@ -17,8 +17,9 @@ test_that("compareMCMCs works", {
 test_that("compareMCMCs works", {
   mc <- nimbleCode(
   {
-    for(i in 1:4) { ## These brackets are required for JAGS
+    for(i in 1:4) { ## These curly brackets are required for JAGS
       y[i] ~ dnorm(0,1)
+      z[i] ~ dnorm(0,1)
     }
   }
   )
@@ -26,7 +27,10 @@ test_that("compareMCMCs works", {
                                          inits = list(y = rnorm(4))),
                                     MCMCs = c('jags', 'nimble'),
                                     MCMCcontrol = list(niter = 2000,
-                                                       burnin = 100))
+                                                       thin = 2,
+                                                       burnin = 100),
+                                    metrics = c("ESS_coda", "efficiency_coda"),
+                                    metricOptions = list(efficiency_coda = list(time = "total")))
   expect_true(is.list(res))
   expect_identical(names(res), c("jags", "nimble"))
   expect_true(inherits(res[['nimble']], "MCMCresult"))

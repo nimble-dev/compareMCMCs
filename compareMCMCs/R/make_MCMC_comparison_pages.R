@@ -15,30 +15,29 @@ getPageComponents <- function() {
   compareMCMCs_registered_pageComponents
 }
 
-
 ## Set up library for building page components
 registerPageComponents(list(timing = list(make = 'timeComparisonComponent',
-                                            linkText = "MCMC run time"),
-                              efficiencySummary = list(make = 'minMeanComparisonComponent',
-                                                       fileSuffix = "_efficiencySummary",
-                                                       linkText = "MCMC efficiency summary"),
-                              efficiencySummaryAllParams = list(make = 'minMeanAllComparisonComponent',
-                                                                fileSuffix = "_efficiencySummaryAll",
-                                                                linkText = "MCMC efficiency summary (with all parameters)",
-                                                                plot = 'plotMinMeanAll'),
-                              paceSummaryAllParams = list(make = 'minMeanAllComparisonComponent',
-                                                          fileSuffix = "_paceSummaryAll",
-                                                          linkText = "MCMC pace summary (with all parameters)",
-                                                          plot = 'plotMinMeanAll',
-                                                          control = list(invert = TRUE)),
-                              efficiencyDetails = list(make = 'efficiencyDetailsComparisonComponent',
-                                                       fileSuffix = "_efficiencyDetails",
-                                                       linkText = "MCMC efficiency details",
-                                                       control = list(ncol = 4)),
-                              posteriorSummary = list(make = 'posteriorSummaryComparisonComponent',
-                                                      fileSuffix = "_posteriorSummary",
-                                                      linkText = "Posterior summaries",
-                                                      control = list(ncol = 4)))
+                                          linkText = "MCMC sampling time"),
+                            efficiencySummary = list(make = 'minMeanComparisonComponent',
+                                                     fileSuffix = "_efficiencySummary",
+                                                     linkText = "MCMC efficiency summary"),
+                            efficiencySummaryAllParams = list(make = 'minMeanAllComparisonComponent',
+                                                              fileSuffix = "_efficiencySummaryAll",
+                                                              linkText = "MCMC efficiency summary (with all parameters)",
+                                                              plot = 'plotMinMeanAll'),
+                            paceSummaryAllParams = list(make = 'minMeanAllComparisonComponent',
+                                                        fileSuffix = "_paceSummaryAll",
+                                                        linkText = "MCMC pace summary (with all parameters)",
+                                                        plot = 'plotMinMeanAll',
+                                                        control = list(invert = TRUE)),
+                            efficiencyDetails = list(make = 'efficiencyDetailsComparisonComponent',
+                                                     fileSuffix = "_efficiencyDetails",
+                                                     linkText = "MCMC efficiency details",
+                                                     control = list(ncol = 4)),
+                            posteriorSummary = list(make = 'posteriorSummaryComparisonComponent',
+                                                    fileSuffix = "_posteriorSummary",
+                                                    linkText = "Posterior summaries",
+                                                    control = list(ncol = 4)))
 )
 
 #' @export
@@ -72,7 +71,7 @@ make_MCMC_comparison_pages <- function(comparisonResults,
 
   ## Set up default page components
   if(missing(pageComponents)) {
-    pageComponents <- list(timing = FALSE,
+    pageComponents <- list(timing = TRUE,
                            efficiencySummary = FALSE,
                            efficiencySummaryAllParams = TRUE,
                            paceSummaryAllParams = TRUE,
@@ -103,7 +102,8 @@ make_MCMC_comparison_pages <- function(comparisonResults,
     }
   }
 
-  combinedComparisonResults <- combineMetrics(comparisonResults)
+  combinedComparisonResults <- combineMetrics(comparisonResults, 
+                                              include_times = TRUE)
 
     madePageComponents <- list()
     for(j in names(pageComponents)) {
@@ -172,7 +172,7 @@ make_example_html <- function(modelName,
                           linkTexts[[i]],
                           "</h2>\n",
                           print(madePageComponents[[i]][['printable']],
-                                type = 'html', print.results = FALSE)
+                                type = 'html', print.results = FALSE, include.rownames = FALSE)
                           )
       else
         element <- paste0("<h2 id='",
@@ -214,8 +214,15 @@ make_example_html <- function(modelName,
   cat(html,file=paste(modelName,".html",sep=""))
 }
 
+timeComparisonComponent <- function(comparisonResults,
+                                    control) {
+  times <- comparisonResults$times
+  times <- cbind(data.frame(MCMC = row.names(times)), times)
+  row.names(times) <- NULL
+  list(printable = xtable(times))
+}
+
 minMeanComparisonComponent <- function(comparisonResults,
-                                       ##modelName,
                                        control) {
   if(!requireNamespace('ggplot2', quietly = TRUE))
     stop('Package ggplot2 is required but is not installed.')
