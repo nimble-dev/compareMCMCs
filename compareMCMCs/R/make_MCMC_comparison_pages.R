@@ -278,7 +278,7 @@ minMeanComparisonComponent <- function(comparisonResults,
   }
   list(plottable = p,
        height = 6,
-       width = 10,
+       width = 14,
        html_img_args = "height = \"600\" width = \"1000\"")
 }
 
