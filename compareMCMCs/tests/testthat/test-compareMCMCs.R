@@ -30,7 +30,7 @@ test_that("compareMCMCs works", {
                                                        thin = 2,
                                                        burnin = 100),
                                     metrics = c("ESS_coda", "efficiency_coda"),
-                                    metricOptions = list(efficiency_coda = list(time = "total")))
+                                    metricOptions = list(efficiency_coda = list(time = "setup+sampling")))
   expect_true(is.list(res))
   expect_identical(names(res), c("jags", "nimble"))
   expect_true(inherits(res[['nimble']], "MCMCresult"))

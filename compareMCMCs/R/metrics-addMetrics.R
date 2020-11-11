@@ -11,15 +11,15 @@
 #' These functions provide ways to manipulate the collection of metrics inside one or more 
 #' `MCMCresult` objects.
 #' 
-#' The `MCMCresult` class is fairly simple.  One can also modify contents of an
+#' The \code{\link{MCMCresult}} class is fairly simple.  One can also modify contents of an
 #' `MCMCresult` object using class methods or direct manipulation of contents.
 #' 
-#' Metrics are organized as "by parameter", when there is one result for each parameter (column)
-#' of MCMC output, and "by MCMC", when there is one result for an entire MCMC sample (across all parameters).
+#' Metrics are organized as "byParameter", when there is one result for each parameter (column)
+#' of MCMC output, and "byMCMC", when there is one result for an entire MCMC sample (across all parameters).
 #' 
 #' `clearMetrics` clears all metrics by parameter, by MCMC, or both.
 #' 
-#' `addMetrics` populates a set of metrics.  See vignette for more information.
+#' `addMetrics` populates a set of metrics.  See package vignette for more information.
 #' 
 #' @name modifyMetrics
 
@@ -45,7 +45,8 @@ addMetrics <- function(results,
                                    'sd',
                                    'CI95_low',
                                    'CI95_upp',
-                                   'efficiency_coda'),
+                                   'ESS',
+                                   'efficiency'),
                        options = list()) {
   if(!require(reshape2)) stop(paste0('Package reshape2 is required to add metrics. ',
                                      'Please install reshape2.'))
@@ -95,7 +96,8 @@ addMetrics <- function(results,
 #' 
 #' @param results a list of `MCMCresult` objects
 #' 
-#' @value A list with elements `byParameter` and `byMCMC`.  Each element combines 
+#' @return 
+#' A list with elements `byParameter` and `byMCMC`.  Each element combines 
 #' the corresponding elements for each `MCMCresult` object in the `results` argument.
 #' 
 #' @export
@@ -116,10 +118,10 @@ combineMetrics <- function(results, include_times = FALSE) {
     times <- do.call('rbind',
                      c(lapply(results,
                               function(x) {
-                                  ans <- x$times[['sampling']]
+                                  ans <- c(x$times[['burnin']], x$times[['postburnin']], x$times[['sampling']])
                               }))
                      )
-    colnames(times) <- "sampling time"
+    colnames(times) <- c("burnin", "post-burnin", "total sampling")
   }
   ans <- list(byParameter = byParameter,
               byMCMC = byMCMC)
@@ -127,3 +129,4 @@ combineMetrics <- function(results, include_times = FALSE) {
     ans$times <- times
   ans
 }
+

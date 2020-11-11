@@ -20,18 +20,19 @@
 #'     sample).
 #'
 #' @param MCMCs A character vector of MCMC cases to run.  This can
-#'     include "nimble" (default nimble samplers), "jags", "WinBUGS",
-#'     "OpenBUGS", "Stan", one of several nimble special cases
+#'     include "nimble" (default nimble samplers), "jags", "stan",
+#'      one of several nimble special cases
 #'     (see details below), custom nimble
 #'     sampler configurations provided via argument
 #'     \code{nimbleMCMCdefs}, and external MCMC engines registered via
-#'     \code{\link{registerMCMCengine}}.
+#'     \code{\link{registerMCMCengine}}.  See \link{builtin_MCMCs} for information on
+#'     "jags" and "stan".  Support for OpenBUGS and WinBUGS is pending.
 #'
 #' @param nimbleMCMCdefs A list of information for custom sampler configurations in nimble.  See Details below.
 #'
 #' @param externalMCMCinfo A list of arbitrary information for external MCMC engines, 
 #' named by engine names.  If there is an external MCMC engine 
-#'  named "myMCMC", then a list element `myMCMC`` of
+#'  named "myMCMC", then a list element `myMCMC` of
 #'   \code{externalMCMCinfo} will be passed to the engine as its \code{MCMCinfo}
 #'    argument.
 #'

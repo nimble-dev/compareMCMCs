@@ -10,7 +10,8 @@ clearMetrics(results, byParameter = TRUE, byMCMC = TRUE)
 
 addMetrics(
   results,
-  metrics = c("mean", "median", "sd", "CI95_low", "CI95_upp", "efficiency_coda")
+  metrics = c("mean", "median", "sd", "CI95_low", "CI95_upp", "ESS", "efficiency"),
+  options = list()
 )
 }
 \arguments{
@@ -29,13 +30,13 @@ Clear metrics or add metrics to MCMC results.
 These functions provide ways to manipulate the collection of metrics inside one or more
 \code{MCMCresult} objects.
 
-The \code{MCMCresult} class is fairly simple.  One can also modify contents of an
+The \code{\link{MCMCresult}} class is fairly simple.  One can also modify contents of an
 \code{MCMCresult} object using class methods or direct manipulation of contents.
 
-Metrics are organized as "by parameter", when there is one result for each parameter (column)
-of MCMC output, and "by MCMC", when there is one result for an entire MCMC sample (across all parameters).
+Metrics are organized as "byParameter", when there is one result for each parameter (column)
+of MCMC output, and "byMCMC", when there is one result for an entire MCMC sample (across all parameters).
 
 \code{clearMetrics} clears all metrics by parameter, by MCMC, or both.
 
-\code{addMetrics} populates a set of metrics.  See vignette for more information.
+\code{addMetrics} populates a set of metrics.  See package vignette for more information.
 }

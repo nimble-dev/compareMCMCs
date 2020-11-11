@@ -8,36 +8,42 @@
 \alias{MCMCmetric_CI95}
 \alias{MCMCmetric_CI95low}
 \alias{MCMCmetric_CI95upp}
-\alias{MCMCmetric_efficiency_coda}
+\alias{MCMCmetric_ESS}
 \title{Built-in metrics for \code{MCMCresult} objects}
 \usage{
-MCMCmetric_mean(result)
+MCMCmetric_mean(result, ...)
 
-MCMCmetric_median(result)
+MCMCmetric_median(result, ...)
 
-MCMCmetric_sd(result)
+MCMCmetric_sd(result, ...)
 
-MCMCmetric_CI95(result)
+MCMCmetric_CI95(result, ...)
 
-MCMCmetric_CI95low(result)
+MCMCmetric_CI95low(result, ...)
 
-MCMCmetric_CI95upp(result)
+MCMCmetric_CI95upp(result, ...)
 
-MCMCmetric_efficiency_coda(result)
+MCMCmetric_ESS(result, options = NULL)
 }
 \arguments{
 \item{result}{An MCMCresult object, normally a list element returned by \code{\link{compareMCMCs}}}
+
+\item{options}{A (metric-specific) list of named control options accepted by some metrics.}
 }
 \value{
 A list that may contain elements named:
 \itemize{
 \item \code{byParameter}: A named list of vectors.  In each vector,
 the elements correspond to parameters.  The list names
-will become names in any outputs.
+will become parameter names in the \code{byParameter} element of
+\code{metrics} elements in \code{MCMCresult} objects.
 \item \code{byMCMC}: A named list of numbers.
 }
 
 It is also valid to return a list of such lists.
+
+In normal use, metrics are called by \code{addMetrics} (possibly from \code{compareMCMCs})
+and the results are collated in the \code{metrics} field of \code{MCMCresult} objects.
 }
 \description{
 These functions are normally called via compareMCMCs or addMetric.
@@ -55,6 +61,16 @@ The built-in metrics include:
 \item CI95 : both ends of 95\% credible interval, a combination of CI95low and CI95upp
 \item CI95low : lower end of 95\% credible interval
 \item CI95upp : upper end of 95\% credible interval
-\item efficiency or (synonomously) efficiency_coda : effective sample size (ESS) and efficiency (ESS / computation time)
+\item ESS : effective sample size (ESS).  Control options
+include \code{ESSfun} (a function to estimate ESS, with default = \code{coda::effectiveSize}),
+and \code{suffix} (a character string to be appended to "ESS" to form a label,
+with default = "").
+\item efficiency or (synonomously) efficiency_coda : effective sample size (ESS) and
+efficiency (ESS / computation time).  If \code{ESS} was already calculated, it will not
+be re-calculated.  Control options include \code{ESSfun} (passed to \code{ESS}), \code{suffix}
+(a character string to be appended to "efficiency" to form a label,
+with default = ""), and \code{time} (a character string to be used as an expression
+to calculate the computation time from elements of the \code{times} element of the
+\code{result} object, with default = "sampling" for burning+postburnin times).
 }
 }

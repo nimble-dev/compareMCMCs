@@ -1,3 +1,5 @@
+#' @rdname builtin-MCMCs
+#' @export
 MCMCdef_stan <- function(MCMCinfo, 
                         MCMCcontrol, 
                         monitorInfo, 
@@ -8,110 +10,122 @@ MCMCdef_stan <- function(MCMCinfo,
                     modelInfo)
 }
 ## externalMCMCinfo in compareMCMCs becomes MCMCinfo here
-## A list of information, named by external MCMC engine names, to provided to each engine.
 ## If there is an external MCMC engine named "myMCMC", then a list element "myMCMC" of \code{externalMCMCinfo} will be passed to the engine as its \code{MCMCinfo} argument.
 
 MCMCdef_stan_impl <- function(MCMCinfo,
                               MCMCcontrol, 
                               monitorInfo, 
                               modelInfo) {
-  ## SP: modelInfo is a list containing
-  ## - stan_model: name of .stan file containing the modelcode  ## SP: was only model, but then it is rewritten form compareMCMCs function
+  ## For this plugin, MCMCinfo is a list containing
+  ## - file: name of .stan file containing the model code
   ## - data: should be already in long format?
   ## - init: name of a file with initial values in the long format required by Stan
-
+  ## - stan_model_args
+  ## - stan_sampling_args
+  
   ## If the user provides externalMCMCinfo = list(stan = list(file = "stan_code.stan")),
   ## then in this function, MCMCinfo will be list(file = "stan_code.stan")
-  
-  ## Plan:
-  ## Allow two options for elements in MCMCinfo:
-  ## Simple mode:
-  ##    1. file (to be passed as argument file to rstan::stan_model)
-  ##    2. data (to be passed as argument data to rstan::sampling)  
-  ##    3. init (to be passed as argument init to rstan::sampling)
-  ## General mode:
-  ##    1. stan_model_args (to be passed as argument list to rstan::stan_model)
-  ##    2. sampling_args (to be modified and passed as argument list to rstan::sampling)
+
   ##
   ##  Note: stan has a seed argument, which we will get from MCMCcontrol$seed,
   ##    which will have the value of the seed argument to compareMCMCs
   ##  Note: in rstan::sampling function the `iter` argument comprises also the number of warmup iterations
   ##  
   
-  	if(is.null(MCMCinfo))
-   		stop("stan MCMC was requested but there is no stan entry in externalMCMCinfo")
-  	if(requireNamespace('rstan', quietly = TRUE)) {
-    
-    ## extract base elements from MCMCInfo
-    fileStan <- MCMCinfo$file
-    dataStan <- MCMCinfo$data
-    initStan <- MCMCinfo$init
-
-    if(is.null(fileStan) | fileStan == '') stop('must provide \'file\' argument to run Stan MCMC')
-    
-    if(is.null(dataStan)) stop("stan entry in externalMCMCinfo is missing a data entry.")
-    
-    if(!is.list(dataStan)) stop("need to pass data in stan supported format")   
-      
-    ## extract general elements from MCMCInfo
-  	stan_model_args <- if(!is.null(MCMCinfo$stan_model_args)) MCMCinfo$stan_model_args else list() 
-  	sampling_args   <- if(!is.null(MCMCinfo$sampling_args))   MCMCinfo$sampling_args   else list()
-
-  	## modify stan_model_args
-	stan_model_args$file <- fileStan
-	## Create stan_model object
-	compileTime <- system.time(stan_mod <- do.call(rstan::stan_model, stan_model_args))
-
-  	## modify sampling args
-	sampling_args$object <- stan_mod ## object of class stanmodel
-    sampling_args$data   <- dataStan
-    sampling_args$chains <- 1
-
-    ##  Note: in rstan::sampling function the `iter` argument comprises also the number of warmup iterations
-    if(is.null(sampling_args$warmup))
-      sampling_args$warmup <- MCMCcontrol$niter
-    if(is.null(sampling_args$iter))
-      sampling_args$iter   <- MCMCcontrol$niter + sampling_args$warmup  ## SP: using default stan warmup (half of niter)
-    if(is.null(sampling_args$thin))
-      sampling_args$thin   <- MCMCcontrol$thin
-    if(is.null(sampling_args$seed))
-      sampling_args$seed   <- MCMCcontrol$seed
-    
-    ## SP: we could have the monitors passed to rstan:::sampling function
-    # sampling_args$pars <- MCMCcontrol$monitors
-
-    ## Should 
-    # sampling_args$pars   <- MCMCcontrol$monitors
-    ## SP: stan has a default random initialization:
-    ## 1) should we allow for that? 
-  	## 2) if yes, should we give a warning message?
-
-    if(!is.null(initStan))
-      sampling_args$init   <- initStan
-    
-    runTime <- system.time(
-      stan_out <- do.call(rstan::sampling, sampling_args))
-    
-    ## SP: should we include warmup samples?  
-    samplesArray <- rstan::extract(stan_out, 
-                                pars = monitorInfo$monitorVars,
-                                permuted = FALSE,
-                                inc_warmup = FALSE)[, 1, ]
-    
-    ## SP: rstan::get_elapsed_time() returns time in a different format from system.time,
-    ## I am just adding some zeros to maintain the format across different types of MCMCresults
-    ## sampling time, discarding warmup
- 
-    sampleTime <- rstan::get_elapsed_time(stan_out)[2]
-    totalTime  <- runTime
-
-    ## return MCMCresult object, with samples and time populated
-    ## SP 'sample' is the default tilme                                         
-    result <- MCMCresult$new(samples = samplesArray,
-                             times = list(sample = totalTime, sampling = sampleTime, compile = compileTime))
-    return(result)
-  } else {
+  if(is.null(MCMCinfo))
+    stop("stan MCMC was requested but there is no stan entry in externalMCMCinfo")
+  if(!requireNamespace('rstan', quietly = TRUE))
     stop("stan MCMC was requested but the rstan package is not installed.")
-    return(NULL)
+  
+  ## extract base elements from MCMCInfo
+  fileStan <- MCMCinfo$file
+  dataStan <- MCMCinfo$data
+  initStan <- MCMCinfo$init
+  
+  ## extract general elements from MCMCInfo
+  stan_model_args <- if(!is.null(MCMCinfo$stan_model_args)) 
+    MCMCinfo$stan_model_args else list() 
+  sampling_args   <- if(!is.null(MCMCinfo$sampling_args)) 
+    MCMCinfo$sampling_args   else list()
+  
+  if((is.null(fileStan) | fileStan == '') & is.null(stan_model_args$file))
+    stop('must provide \'file\' information to run Stan MCMC')
+  
+  # It may be valid (unusual, but valid) to run without data, as it is for nimble.
+  
+  ## explicit file argument, if provided, takes precedence
+  if(!is.null(fileStan)) stan_model_args$file <- fileStan
+  
+  ## Create stan_model object
+  compileTime <- system.time(stan_mod <- do.call(rstan::stan_model, stan_model_args))
+  
+  ## modify sampling args
+  sampling_args$object <- stan_mod ## object of class stanmodel
+  # If a user provided init, data, explicitly, they take precedence:
+  if(!is.null(initStan))  sampling_args$init  <- initStan
+  if(!is.null(dataStan)) sampling_args$data   <- dataStan
+  if(!is.null(sampling_args$chains))
+    if(sampling_args$chains != 1)
+      warning("Stan chains value will be over-ridden and set to 1")
+  sampling_args$chains <- 1
+  
+  ##  Note: in rstan::sampling function the `iter` argument includes warmup iterations
+  # Explcitly provided arguments take precedence over MCMCcontrol entries
+  if(is.null(sampling_args$warmup))
+    sampling_args$warmup <- floor(MCMCcontrol$niter/2) # This matches Stan's default
+  if(is.null(sampling_args$iter))
+    sampling_args$iter   <- MCMCcontrol$niter
+  if(is.null(sampling_args$thin))
+    sampling_args$thin   <- MCMCcontrol$thin
+  
+  # Stan accepts a seed argument.
+  # compareMCMCs also accepts a seed argument.  If a seed is provided,
+  #    set.seed is called before calling each MCMC engine, such as this one.
+  # Therefore Stan's seed argument may not be necessary, but nevertheless
+  #    a user might for some reason want to provide one.
+  # Therefore we do not do the following.  Instead a user must provide
+  #   sampling_args$seed if they want it.
+  # 
+  #  What we don't do:
+  # if(is.null(sampling_args$seed))
+  #   sampling_args$seed   <- MCMCcontrol$seed
+  
+  # sampling_args$pars <- MCMCcontrol$monitors
+  
+  
+  if(!is.null(sampling_args$pars)) {
+    message("Over-riding monitors with sampling_args$pars (since it was provided) for Stan.")
+  } else {
+    sampling_args$pars <- MCMCcontrol$monitorVars
   }
+  
+  runTime <- system.time(
+    stan_out <- do.call(rstan::sampling, sampling_args))
+  
+  ## Warmup samples should not be included.
+  samplesArray <- rstan::extract(stan_out, 
+                                 # pars = monitorInfo$monitorVars,
+                                 permuted = FALSE,
+                                 inc_warmup = FALSE)[, 1, ]
+  
+  ## Stan provides its own timings, but there is a need
+  ## to have them be comparable to those for other MCMCs.
+  ## What we do is use the system.time result for total sampling time
+  ## so that it is recorded in a similar way as for other MCMCs.
+  ## But we use Stan's internal timings, from get_elapsed_time,
+  ## to separate the warmup (burnin) time.
+  
+  stan_times <- rstan::get_elapsed_time(stan_out)
+  burninTime <- stan_times[1]
+  samplingTime <- runTime[3]
+  postburninTime <- samplingTime - burninTime
+  
+  ## return MCMCresult object, with samples and time populated
+  ## SP 'sample' is the default tilme                                         
+  result <- MCMCresult$new(samples = samplesArray,
+                           times = list(setup = compileTime[3],
+                                        burnin = burninTime,
+                                        postburnin = postburninTime,
+                                        sampling = samplingTime))
+  result
 }

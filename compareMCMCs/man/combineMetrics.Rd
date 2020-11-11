@@ -4,10 +4,14 @@
 \alias{combineMetrics}
 \title{Combine all metrics from a list of \code{MCMCresult} objects.}
 \usage{
-combineMetrics(results)
+combineMetrics(results, include_times = FALSE)
 }
 \arguments{
 \item{results}{a list of \code{MCMCresult} objects}
+}
+\value{
+A list with elements \code{byParameter} and \code{byMCMC}.  Each element combines
+the corresponding elements for each \code{MCMCresult} object in the \code{results} argument.
 }
 \description{
 This is useful for seeing results from multiple MCMC engines compactly.

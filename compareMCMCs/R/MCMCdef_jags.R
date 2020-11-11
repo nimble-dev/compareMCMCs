@@ -1,3 +1,5 @@
+#' @rdname builtin-MCMCs
+#' @export
 MCMCdef_jags <- function(MCMCinfo, 
                          MCMCcontrol, 
                          monitorInfo, 
@@ -18,26 +20,37 @@ MCMCdef_jags_impl <- function(MCMCinfo,
     constantsAndData <- c(modelInfo$constants, modelInfo$data)
     writeLines(paste0('model\n', paste0(deparse(code), collapse='\n')),
                con=modelFileName)
-    setupTime <- system.time({
+    setupTimeResult <- system.time({
       jags_mod <- rjags::jags.model(file=modelFileName,
                                   data=constantsAndData,
                                   inits=modelInfo$inits,
                                   n.chains=1,
                                   quiet=FALSE)
     })
-    timeResult <- system.time({
-      if(MCMCcontrol$burnin > 0) update(model = jags_mod,
-                                        n.iter = MCMCcontrol$burnin)
+    setupTime <- setupTimeResult[3]
+    
+    burninTime <- 0
+    if(MCMCcontrol$burnin > 0) {
+        burninTimeResult <- system.time(update(object = jags_mod,
+                                               n.iter = MCMCcontrol$burnin))
+        burninTime <- burninTimeResult[3]
+    }
+
+    postburninTimeResult <- system.time({
       jags_out <- rjags::coda.samples(model=jags_mod,
                                       variable.names=monitorInfo$monitorVars,
-                                      n.iter=MCMCcontrol$niter,
+                                      n.iter=MCMCcontrol$niter - MCMCcontrol$burnin,
                                       thin=MCMCcontrol$thin)
     })
+    postburninTime <- postburninTimeResult[3]
+    
     monitorNodesBUGS <<- gsub(' ', '', monitorInfo$monitors)
     samplesArray <- jags_out[[1]][, monitorNodesBUGS, drop=FALSE]
     result <- MCMCresult$new(samples = samplesArray,
-                             times = list(setup = setupTime[3],
-                                          sampling = timeResult[3]))
+                             times = list(setup = setupTime,
+                                          sampling = postburninTime + burninTime,
+                                          burnin = burninTime,
+                                          postburnin = postburninTime))
     unlink(modelFileName)
     return(result)
   } else {

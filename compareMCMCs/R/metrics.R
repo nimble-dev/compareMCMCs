@@ -5,6 +5,7 @@
 #' These functions are normally called via compareMCMCs or addMetric.
 #' 
 #' @param result An MCMCresult object, normally a list element returned by \code{\link{compareMCMCs}}
+#' @param options A (metric-specific) list of named control options accepted by some metrics.
 #' 
 #' @details 
 #' 
@@ -20,16 +21,30 @@
 #' - CI95 : both ends of 95% credible interval, a combination of CI95low and CI95upp
 #' - CI95low : lower end of 95% credible interval
 #' - CI95upp : upper end of 95% credible interval
-#' - efficiency or (synonomously) efficiency_coda : effective sample size (ESS) and efficiency (ESS / computation time)
+#' - ESS : effective sample size (ESS).  Control options
+#'  include `ESSfun` (a function to estimate ESS, with default = `coda::effectiveSize`),
+#'  and `suffix` (a character string to be appended to "ESS" to form a label,
+#'  with default = "").
+#' - efficiency or (synonomously) efficiency_coda : effective sample size (ESS) and 
+#' efficiency (ESS / computation time).  If `ESS` was already calculated, it will not
+#' be re-calculated.  Control options include `ESSfun` (passed to `ESS`), `suffix`
+#' (a character string to be appended to "efficiency" to form a label,
+#'  with default = ""), and `time` (a character string to be used as an expression
+#'  to calculate the computation time from elements of the `times` element of the 
+#'  `result` object, with default = "sampling" for burning+postburnin times). 
 #' 
 #' @return A list that may contain elements named:
 #' 
 #' - `byParameter`: A named list of vectors.  In each vector, 
 #' the elements correspond to parameters.  The list names
-#' will become names in any outputs.
+#' will become parameter names in the `byParameter` element of
+#' `metrics` elements in `MCMCresult` objects.
 #' - `byMCMC`: A named list of numbers.
 #' 
 #' It is also valid to return a list of such lists.
+#' 
+#' In normal use, metrics are called by `addMetrics` (possibly from `compareMCMCs`)
+#' and the results are collated in the `metrics` field of `MCMCresult` objects.
 #' 
 #' @name metrics
 NULL
@@ -78,75 +93,64 @@ MCMCmetric_CI95upp <- function(result, ...) {
   list(byParameter = list(CI95_upp = upp))
 }
 
-MCMCmetric_efficiency_internal <- function(result,
-                                           effectiveSizeFun,
-                                           timeName,
-                                           suffix) {
-  
-  ess <- effectiveSizeFun(result$samples)
-  efficiency <- ess / result$times[[timeName]]
-  byParamNames <- paste0(c("ESS", "efficiency"), suffix)
-  byMCMCNames <- paste0(c("min_efficiency", "mean_efficiency"), suffix)
-  list(byParameter = structure(list(ess,
-                                    efficiency),
-                               names = byParamNames),
-       byMCMC = structure(list(efficiency[which.min(efficiency)],  ## This way to get the min preserves the Parameter name
-                               mean(efficiency)),
-                          names = byMCMCNames)
-  )
-}
-
 #' @rdname metrics
 #' @export
-MCMCmetric_ESS_coda <- function(result, ...) {
-  if("ESS_coda" %in% colnames(result$byParameter))
+MCMCmetric_ESS <- function(result, options = NULL) {
+  defaults <- list(suffix = "") ## Treat ESSfun separately to avoid 
+  ## invoking coda namespace unless it is needed
+  ESSfun <- options[["ESSfun"]]
+  if(is.null(options)) options <- defaults
+  else options <- updateDefaults(defaults, options)
+  if(is.null(ESSfun)) {
+    if(!requireNamespace('coda', quietly = TRUE))
+      stop(paste0('MCMCmetric_ESS requires coda package as default, but it is not installed.\n',
+                  'Greater control can be achieved by providing options (or metricOptions).'))
+    ESSfun <- coda::effectiveSize
+  }
+  
+  ESSsuff <- paste0("ESS", options[['suffix']])
+  if(ESSsuff %in% colnames(result$byParameter)) # It already exists so don't add it again
     return(list())
-  if(!requireNamespace('coda', quietly = TRUE))
-    stop('MCMCmetric_ESScoda requires coda package, but it is not installed.')
-  ess <- coda::effectiveSize(result$samples)
-  list(byParameter = list(ESS_coda = ess))
+  ess <- ESSfun(result$samples)
+  list(byParameter = structure(list(ess), names = ESSsuff))
 }
 
 #' @export
-MCMCmetric_efficiency_coda <- function(result, options = NULL) {
-  if(is.null(options))
-    options <- list(time = "sampling")
+MCMCmetric_efficiency <- function(result, options = NULL) {
+  defaults <- list(time = "sampling", suffix = "")
+  ESSfun <- options[["ESSfun"]]
+  if(is.null(options)) options <- defaults
+  else {
+    options <- updateDefaults(defaults, options)
+    options$ESSfun <- ESSfun
+  }
   ESS_needed <- TRUE
-  if("ESS_coda" %in% colnames(result$byParameter)) {
+  ESSsuff <- paste0("ESS", options$suffix)
+  if(ESSsuff %in% colnames(result$byParameter)) {
     # already calculated
-    ess <- result$byParameter[, "ESS_coda"]
+    ess <- result$byParameter[, ESSsuff]
     names(ess) <- as.character(result$byParameter$Parameter)
     ESS_needed <- FALSE
   } else {
-    ESSmetric <- MCMCmetric_ESS_coda(result, options = options)
-    ess <- ESSmetric$byParameter$ESS_coda
+    ESSmetric <- MCMCmetric_ESS(result, options = options)
+    ess <- ESSmetric$byParameter[[ESSsuff]]
   }
-  if(options$time == "sampling")
-    times <- result$times$sampling
-  if(options$time == "total")
-    times <- result$times$setup + result$times$sampling
-  efficiency <- ess / times
+  time_denominator <- with(result$times, eval(parse(text = options$time, keep.source = FALSE))) ## This allows options$time to be a string of an expression, like "x+y"
+  efficiency <- ess / time_denominator
+  efficiencysuff <- paste0("efficiency", options$suffix)
   byParameter <- if(ESS_needed)
-    list(ESS_coda = ess,
-         efficiency_coda = efficiency)
+                   structure(list(ess, efficiency),
+                             names = c(ESSsuff, efficiencysuff))
   else
-    list(efficiency_coda = efficiency)
-  
+    structure(list(efficiency), names = efficiencysuff)
+
+  min_efficiencysuff <- paste0("min_efficiency", options$suffix)
+  mean_efficiencysuff <- paste0("mean_efficiency", options$suffix)
   list(byParameter = byParameter,
-       byMCMC = list(min_efficiency_coda = efficiency[which.min(efficiency)],  ## This way to get the min preserves the Parameter name
-                     mean_efficiency_coda = mean(efficiency)))
+       byMCMC = structure(list(efficiency[which.min(efficiency)],  ## This way to get the min preserves the Parameter name
+                               mean(efficiency)),
+                          names = c(min_efficiencysuff, mean_efficiencysuff) ) )
 }
-
-MCMCmetric_efficiency_coda_sample_total <- function(result) {
-  if(!requireNamespace('coda', quietly = TRUE))
-    stop('MCMCmetric_ESScoda requires coda package, but it is not installed.')
-  MCMCmetric_efficiency_internal(result,
-                                 coda::effectiveSize,
-                                 'sample_total',
-                                 '_coda_total')
-}
-
-
 
 compareMCMCs_registered_metrics <- new.env()
 
@@ -172,9 +176,9 @@ registerMetrics(
        CI95_low = MCMCmetric_CI95low,
        CI95_upp = MCMCmetric_CI95upp,
        CI95 = MCMCmetric_CI95,
-       ESS = MCMCmetric_ESS_coda,
-       ESS_coda = MCMCmetric_ESS_coda,
-       efficiency = MCMCmetric_efficiency_coda,
-       efficiency_coda = MCMCmetric_efficiency_coda
+       ESS = MCMCmetric_ESS,
+       ESS_coda = MCMCmetric_ESS,
+       efficiency = MCMCmetric_efficiency,
+       efficiency_coda = MCMCmetric_efficiency
   )
 )

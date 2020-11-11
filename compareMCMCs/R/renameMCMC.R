@@ -1,9 +1,23 @@
-# Tool for renaming results, which is particularly useful 
-# before combining results.
-
-## If only name1 is provided, that is the new name
-## If name1 and name2 are provided, name1 is old, name2 is new.
-
+#' Rename an MCMC method throughout a list of `MCMCresult` objects
+#' 
+#' This is useful because an MCMC method name appears in multiple places
+#' 
+#' @param MCMCresult One or a named list of `MCMCresult` objects, such a returned by
+#' \code{\link{compareMCMCs}}.
+#' 
+#' @param newName A new (replacement) name for one of the MCMC method names
+#' 
+#' @param oldName An old (existing) name for one of the MCMC method names
+#' 
+#' @details
+#' This replaces the MCMC label `oldName` with `newName` anywhere they appear in 
+#' the `MCMCresult` list.  This includes in various places in the `metrics` elements of
+#' the `MCMCresult` objects.
+#' 
+#' If `oldName` is omitted, `MCMCresult` must be a single `MCMCresult` object, in which 
+#' the existing MCMC method name will be replaced by `newName`.  Hence `oldName` is only 
+#' necessary if `MCMCresult` is a list of `MCMCresult` objects.
+#' 
 #' @export
 renameMCMC <- function(MCMCresult, newName, oldName) {
   if(inherits(MCMCresult, "MCMCresult")) {

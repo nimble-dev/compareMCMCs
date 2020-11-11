@@ -1,42 +1,63 @@
+#' R6 class to hold MCMC sample, timing results, and metrics
+#' 
+#' @seealso \code{\link{renameMCMC}} to change the name of an MCMC method throughout
+#' the structure of
+#' a list of `MCMCresult` objects.
+#' 
 #' @export
 MCMCresult <- R6Class(
   classname = "MCMCresult",
   portable = TRUE,
-  ## TO-DO: possibly add a modelName field for optional use
   public = list(
-    ## Name of MCMC method for which results are recorded in this object.
+    #' @field MCMC Optional name for the MCMC method.
     MCMC = character(),
-    ## Matrix of samples
+    #' @field samples Matrix of MCMC samples. Rows are for MCMC iterations.  Columns are for 
+    #' parameters.  Columns must be named.
     samples = NULL,
-    ## Properties such as information about the MCMC runs
-    properties = list(),
-    ## Times related to setup (e.g. compilation) and running of an MCMC.
-    ## An MCMC engine should typically provide the following times entries:
-    ## setup:         Time for preparation steps, such as nimble or stan compilation times
-    ## sample_warmup: Time for MCMC burnin or warmup samples
-    ## sample:        Time for MCMC samples to be saved
-    ## sample_total:  Total sampling time, typically sample_warumup + sample
-    ## total:         Total time for everything, typically setup + sample_total
+    #' @field times A list of times including elements for `setup`, `burnin`,
+    #'  `postburnin` (sampling for recorded samples), and `sampling` (normally
+    #'  `burnin` + `postburnin`).  Each list element should be a single numeric value.
     times = list(),
-    ## Metrics such as ESS, efficiency, mean, median.
-    ## These are organized as nested lists with three options.
-    ## Metrics in "byMCMC" will be organized in tidy format
-    ## with a row for each MCMC sample. This will have a column for MCMC name
-    ## and a column for each metric.  There will only be one row,
-    ## but it will be easy to rbind with the same format from other MCMCs.
-    ## These would be metrics where there is a single scalar for the
-    ## entire MCMC, such as min(efficiency).
-    ## Metrics in "byParameter" will be organized in tidy format
-    ## with a row for each MCMC-x-parameter combination.  This will have a
-    ## column for MCMC name, for parameter, and for each metric.  There will
-    ## only be one MCMC, but it will be easy to rbind with the same format
-    ## from other MCMCs.
-    ## Metrics in "other" will simply be stored as an arbitrary list
-    ## named by the metric.  This allows arbitrarily structured
-    ## metrics to be saved.
+    #' @field metrics A list of MCMC performance metrics such as effective sample size 
+    #' (ESS), efficiency, mean, median, and credible interval boundaries. `metrics`
+    #' is organized as a list with three elements: `byMCMC`, `byParameter`, and `other`
+    #' (currently unused). 
+    #' 
+    #' `byMCMC` is for metrics with one number for an entire
+    #' MCMC sample (as opposed to one number for each parameter).  `byMCMC` is a
+    #' data frame with one row and columns for MCMC name
+    #' each metric.  These would be metrics where there is a single scalar for the
+    #' entire MCMC, such as min(efficiency).
+    #' 
+    #' `byParameter` is for metrics with one number for each parameter in each
+    #' MCMC sample.  `byParameter` is a `data.frame` with one row for each 
+    #' MCMC-x-parameter combination and columns for MCMC method, parameter name, and
+    #' each metric.  There will only be one MCMC method name (all entries in the
+    #'  MCMC column will be the same).  
+    #'  
+    #'  The MCMC columns in `byMCMC` and `byParameter`
+    #'  are useful for combining
+    #'  `metrics` from a list of `MCMCresult` objects,
+    #'   such as done by \code{\link{combineMetrics}}, and for retaining
+    #'  MCMC method labels if these `data.frames` are copied and used outside of
+    #'  an `MCMCresult` object.
+    #'  
+    #'  `other` is simply an arbitrary list. This allows arbitrarily structured
+    #'   metrics to be saved.
+    #'   
+    #'   Elements of `metrics` are normally populated by `addMetrics` or `compareMCMCs`
+    #'   (which calls `addMetrics`).
     metrics = list(byMCMC = NULL,
                    byParameter = NULL,
                    other = list()),
+    #' @description
+    #' Create a new `MCMCresult` object.
+    #' @param ... Arbitrary initialization.  If a matrix is passed, it
+    #' will be used to initialize `samples` and the `metrics` elements.
+    #' If a list with a matrix element named `samples` is passed, this element
+    #' will be used as if the matrix itself was passed.  Any other named
+    #' elements of a list that correspond to fields of an `MCMCresult` object
+    #' will be initialized from them.
     initialize = function(...) {
       dotsArg <- list(...)
       for (i in names(dotsArg)) {
@@ -46,13 +67,28 @@ MCMCresult <- R6Class(
           self[[i]] <- dotsArg[[i]]
       }
     },
+    #' @description 
+    #' Populate the samples and initialize the metrics
+    #' @param samples A `data.frame` with MCMC output.
+    #' @return NULL
     setSamples = function(samples) {
       self$samples <<- samples
       self$metrics <<- list(byMCMC = NULL,
-                                 byParameter = NULL,
-                                 other = list())
+                            byParameter = NULL,
+                            other = list())
       self$initializeMetrics(silent = TRUE)
+      invisible(NULL)
    },
+   #' @description
+   #' Change the MCMC method name from oldName to newName
+   #' @param newName New name for MCMC method in `metrics`
+   #' @param oldName Old name for MCMC method in `metrics`
+   #' @details
+   #' This change the `MCMC` field and the corresponding columns
+   #' of `metrics$byParameter` and `metrics$byMCMC`.
+   #'  
+   #' If `oldName` is not the MCMC method name, this function does nothing.
+   #' @return NULL
    rename = function(newName, oldName) {
      if(!missing(oldName))
        if(self$MCMC != oldName)
@@ -67,8 +103,16 @@ MCMCresult <- R6Class(
        if(nrow(self$metrics$byMCMC) > 0)
          self$metrics$byMCMC$MCMC <- newName
      }
+     invisible(NULL)
    },
-    initializeMetrics = function(silent = FALSE) {
+   #' @description
+   #' Initialize metrics if necessary
+   #' @param silent `logical` indicating whether to emit warnings
+   #' @details This function does nothing if metrics are already initialized.
+   #' It does not clear metrics.  See `clearMetrics` for information on 
+   #' how metrics are initialized.
+   #' @return `logical` indicating whether `metrics` is well-formed or not.
+   initializeMetrics = function(silent = FALSE) {
       if(is.null(self$metrics$byParameter) | is.null(self$metrics$byMCMC)) {
         if(length(self$MCMC)==0) {
           if(!silent)
@@ -89,6 +133,16 @@ MCMCresult <- R6Class(
       }
       TRUE
     },
+   #' @description 
+   #' Clear (reset) `byParameter`` and/or `byMCMC`` metrics
+   #' @param byParameter `logical` indicating whether to clear `byParameter` metrics
+   #' @param byMCMC `logical` indicating whether to clear `byMCMC` metrics
+   #' @details 
+   #' `byParameter` metrics are initialized to a `data.frame` with columns for 
+   #' `MCMC` (all the same entry, the `MCMC` field) and `Parameter` (taken from column
+   #' names of the `samples`).
+   #' 
+   #' `byMCMC` metrics are initialized to a `data.frame` with a column for `MCMC`.
    clearMetrics = function(byParameter = TRUE, byMCMC = TRUE) {
      if(byParameter) {
        params <- colnames(self$samples)
@@ -98,6 +152,13 @@ MCMCresult <- R6Class(
      if(byMCMC)
        self$metrics$byMCMC <- data.frame(MCMC = self$MCMC)
    },
+   #' @description 
+   #' Add one set of metric results
+   #' 
+   #' @param metricResult A list with possible elements `byParameter`, `byMCMC`, and
+   #' `other`.  These are typically returned from a metric function called via
+   #' `addMetric`. Each is combined with previous metrics already in the corresponding
+   #' elements of `metrics`.
     addMetricResult = function(metricResult) {
       if(!self$initializeMetrics()) {
         stop("Can't add metric results until metrics can be initialized.  This requires samples and a MCMC name.")

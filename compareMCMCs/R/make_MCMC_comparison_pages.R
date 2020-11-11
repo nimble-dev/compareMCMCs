@@ -20,11 +20,20 @@ registerPageComponents(list(timing = list(make = 'timeComparisonComponent',
                                           linkText = "MCMC sampling time"),
                             efficiencySummary = list(make = 'minMeanComparisonComponent',
                                                      fileSuffix = "_efficiencySummary",
-                                                     linkText = "MCMC efficiency summary"),
+                                                     linkText = "MCMC efficiency summary",
+                                                     control = list(invert = FALSE,  # these are the defaults but are provided explicitly for clarity
+                                                                    min_efficiency_name = "min_efficiency", 
+                                                                    mean_efficiency_name = "mean_efficiency",
+                                                                    suffix = "")),
                             efficiencySummaryAllParams = list(make = 'minMeanAllComparisonComponent',
                                                               fileSuffix = "_efficiencySummaryAll",
                                                               linkText = "MCMC efficiency summary (with all parameters)",
-                                                              plot = 'plotMinMeanAll'),
+                                                              plot = 'plotMinMeanAll',
+                                                              control = list(invert = FALSE,  # these are the defaults but are provided explicitly for clarity
+                                                                             min_efficiency_name = "min_efficiency", 
+                                                                             mean_efficiency_name = "mean_efficiency",
+                                                                             efficiency_name = "efficiency",
+                                                                             suffix = "")),
                             paceSummaryAllParams = list(make = 'minMeanAllComparisonComponent',
                                                         fileSuffix = "_paceSummaryAll",
                                                         linkText = "MCMC pace summary (with all parameters)",
@@ -33,13 +42,47 @@ registerPageComponents(list(timing = list(make = 'timeComparisonComponent',
                             efficiencyDetails = list(make = 'efficiencyDetailsComparisonComponent',
                                                      fileSuffix = "_efficiencyDetails",
                                                      linkText = "MCMC efficiency details",
-                                                     control = list(ncol = 4)),
+                                                     control = list(ncol = 4,
+                                                                    efficiencyName = "efficiency",
+                                                                    suffix = "")),
                             posteriorSummary = list(make = 'posteriorSummaryComparisonComponent',
                                                     fileSuffix = "_posteriorSummary",
                                                     linkText = "Posterior summaries",
                                                     control = list(ncol = 4)))
 )
 
+#' Create html output with comparisons of MCMC results
+#' 
+#' @param comparisonResults An list of `MCMCresult` objects 
+#' such as returned by \code{\link{compareMCMCs}}.
+#' 
+#' @param dir A directory in which to place the html file and any figure files used in it.
+#' 
+#' @param pageComponents A list whose names are registered page components and values
+#' are `TRUE` (to include a component) or `FALSE` (to omit a component).  Components
+#' can also be omitted by leaving them out of the list.
+#' 
+#' @param modelName A name to be used for the model in generated output.
+#' 
+#' @param control A named list of control parameters.
+#' 
+#' @param plot `TRUE` to generate results, `FALSE` not to do so.  Use of `FALSE` is 
+#' useful if one wants to use the returned object (including plottable components)
+#' in one's own way.
+#' 
+#' @details
+#' 
+#' See package vignette for information about page components, including about default 
+#' page components and how to write and register new page components.
+#' 
+#' To see built-in page components and their options, use `as.list(getPageComponents())`.
+#' 
+#' @return 
+#' 
+#' A list of objects returned from each page component plugin.  For figures,
+#' these contain a `plottable` object such as a `ggplot` object.  For text,
+#' these contain information for text output such as an `xtable` object.
+#' 
 #' @export
 make_MCMC_comparison_pages <- function(comparisonResults,
                                        dir = '.',
@@ -216,10 +259,12 @@ make_example_html <- function(modelName,
 
 timeComparisonComponent <- function(comparisonResults,
                                     control) {
+  if(!requireNamespace("xtable"))
+    stop("package xtable is required to include time in comparison pages.")
   times <- comparisonResults$times
   times <- cbind(data.frame(MCMC = row.names(times)), times)
   row.names(times) <- NULL
-  list(printable = xtable(times))
+  list(printable = xtable::xtable(times))
 }
 
 minMeanComparisonComponent <- function(comparisonResults,
@@ -230,11 +275,19 @@ minMeanComparisonComponent <- function(comparisonResults,
     stop('Package ggplot2 is required but is not installed.')
 
   if(missing(control)) control <- list()
-  invert <- control[['invert']]  ## do seconds/ESS instead of ESS/second
-  if(is.null(invert)) invert <- FALSE
-
+  defaults <- list(invert = FALSE,  ## If TRUE, do Pace = seconds/ESS instead of Efficiency = ESS/second
+                   min_efficiency_name = "min_efficiency",
+                   mean_efficiency_name = "mean_efficiency",
+                   suffix = "")
+  control <- updateDefaults(defaults, control)
+  invert <- control$invert
+  min_efficiency_name <- paste0(control$min_efficiency_name, control$suffix) #STOPPED_HERE
+  mean_efficiency_name <- paste0(control$mean_efficiency_name, control$suffix) 
+  
   byMCMC <- comparisonResults$byMCMC
-  columnsToUse <- c('MCMC','min_efficiency_coda','mean_efficiency_coda')
+  columnsToUse <- c('MCMC',
+                    min_efficiency_name,
+                    mean_efficiency_name)
   if(!all(columnsToUse %in% colnames(byMCMC))) {
     missingCols <- columnsToUse[!(columnsToUse %in% colnames(byMCMC))]
     warnings(paste0("MCMC column names ", paste(missingCols, collapse = ','), " expected but not found for minMeanComparisonComponent."))
@@ -283,13 +336,10 @@ minMeanComparisonComponent <- function(comparisonResults,
 }
 
 minMeanAllComparisonComponent <- function(comparisonResults,
-                                          ##modelName,
                                           control) {
   part1 <- minMeanComparisonComponent(comparisonResults,
-                                      ##modelName,
                                       control)
   part2 <- allParamEfficiencyComparisonComponent(comparisonResults,
-                                        ##         modelName,
                                                  control)
   list(plottable = list(minMean = part1$plottable,
                         allParams = part2$plottable),
@@ -307,10 +357,12 @@ allParamEfficiencyComparisonComponent <- function(comparisonResults,
   vars <- comparisonResults$byParameter
 ##  vars <- comparisonResults$varSummaries
   if(missing(control)) control <- list()
-  invert <- control[['invert']]  ## do seconds/ESS instead of ESS/second
-  if(is.null(invert)) invert <- FALSE
-  efficiency_name <- control[['efficiency_name']]
-  if(is.null(efficiency_name)) efficiency_name <- 'efficiency_coda'
+  defaults <- list(invert = FALSE,
+                   efficiency_name = "efficiency",
+                   suffix = "")
+  control <- updateDefaults(defaults, control)
+  invert <- control$invert
+  efficiency_name <- paste0(control$efficiency_name, control$suffix)
 
   if(invert) vars[[efficiency_name]] <- 1/vars[[efficiency_name]]
 
@@ -359,14 +411,16 @@ allParamEfficiencyComparisonComponent <- function(comparisonResults,
 }
 
 efficiencyDetailsComparisonComponent <- function(comparisonResults,
-##                                                 modelName,
-                                                 control = list(ncol = 4)) {
-    if(!requireNamespace('ggplot2', quietly = TRUE))
-        stop('ggplot2 is required but not installed')
-    df <- comparisonResults$byParameter
-    efficiency_name <- control[['efficiency_name']]
-    if(is.null(efficiency_name)) efficiency_name <- 'efficiency_coda'
-
+                                                 control = list()) {
+  if(!requireNamespace('ggplot2', quietly = TRUE))
+    stop('ggplot2 is required but not installed')
+  df <- comparisonResults$byParameter
+  defaults <- list(ncol = 4,
+                   efficiency_name = 'efficiency',
+                   suffix = '')
+  control <- updateDefaults(defaults, control)
+  efficiency_name <- paste0(control$efficiency_name, control$suffix)
+  
   ncol <- control$ncol
   if(length(unique(df$Parameter)) * length(unique(df$MCMC)) == nrow(df)) {
     p=ggplot2::ggplot(df,ggplot2::aes_string(x = "MCMC", y= efficiency_name, fill = "MCMC"))+ ##y = size_time
@@ -374,9 +428,7 @@ efficiencyDetailsComparisonComponent <- function(comparisonResults,
       ggplot2::ggtitle("MCMC efficiency details\n (Effective sample size per second for each parameter)")+
       ggplot2::ylab('Effective sample size per second') +
       ggplot2::facet_wrap(~ Parameter,ncol=ncol,scales='free') +
-      ggplot2::theme(legend.position = "top") ## +
-    ## saving to jpg is now done externally
-    ##                               ggsave(paste(modelNames[i],'_efficiencyDetails.jpg',sep=''), height = img_h, width = 12,limitsize=F)
+      ggplot2::theme(legend.position = "top")
   } else {
     ## multiple points for each method
     p=ggplot2::ggplot(df,ggplot2::aes_string(x = "MCMC" ,y = efficiency_name, fill = "MCMC", color = "MCMC")) + ##y = size_time
@@ -385,9 +437,7 @@ efficiencyDetailsComparisonComponent <- function(comparisonResults,
       ggplot2::ggtitle("MCMC efficiency details\n (Effective sample size per second for each parameter)\n \"-\" shows mean.")+
       ggplot2::ylab('Effective sample size per second') +
       ggplot2::facet_wrap(~ Parameter,ncol=ncol,scales='free') +
-      ggplot2::theme(legend.position = "top") ## +
-    ##                                    ggsave(paste(modelNames[i],'_efficiencyDetails.jpg',sep=''), height = img_h, width = 12,limitsize=F)
-
+      ggplot2::theme(legend.position = "top")
   }
   numVars <- length(unique(df[,'Parameter']))
   height <- max(floor(numVars*4.5/3),

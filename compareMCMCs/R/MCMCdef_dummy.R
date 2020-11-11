@@ -1,3 +1,4 @@
+#' @rdname builtin-MCMCs
 #' @export
 MCMCdef_dummy <- function(MCMCinfo, 
                           MCMCcontrol, 
@@ -9,7 +10,6 @@ MCMCdef_dummy <- function(MCMCinfo,
                      modelInfo)
 }
 
-#' @export
 MCMCdef_dummy_impl <- function(MCMCinfo,
                                MCMCcontrol, 
                                monitorInfo, 
