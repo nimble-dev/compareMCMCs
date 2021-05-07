@@ -1,6 +1,6 @@
 context("applyConversions works")
 
-testthat("conversion specifications work", {
+test_that("conversion specifications work", {
 #  library(compareMCMCs)
   
   samples <- matrix(1:50, ncol = 10)

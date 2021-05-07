@@ -176,9 +176,6 @@ compareMCMCs <- function(modelInfo = list(),
                        mcmc,'".'))
   }
 
-  ## The old system did a step here to setMCMCdefs.
-  ## It's not clear if a step like this is needed.
-
   ## Collect two sets of information for calling MCMC plugins.
   ## 1. MCMCcontrol contains specifications of the run.
   ## 2. otherInfo contains specifications of the model, data, constants, 

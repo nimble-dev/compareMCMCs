@@ -65,6 +65,10 @@ registerMCMCengine('stan', MCMCdef_stan)
 #' 
 #' The elements `file`, `data`, and `inits` take precendence over corresponding entries in `stan_model_args` or `sampling_args`.
 #' 
+#' If elements `warmup`, `iter`, and/or `thin` are provided in `sampling_args`, those take precedence over
+#' corresponding values in the `MCMCcontrol` argument to `compareMCMCs`.  Otherwise `iter` is set to 
+#' `MCMCcontrol$niter` and `warmup` is set to `MCMCcontrol$niter/2`.  Only one chain will be run.
+#' 
 #' Total sampling time for Stan is recorded via `system.call(sampling(...))`.  This is
 #' similar to how time is recorded for other MCMCs. The warmup time (called "burnin" in `compareMCMCs` for
 #' consistency across different MCMCs) is 

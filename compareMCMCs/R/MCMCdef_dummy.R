@@ -26,6 +26,9 @@ MCMCdef_dummy_impl <- function(MCMCinfo,
   dummytime <- 0.1
   dummytime[1:5] <- c(60, 60, 60, 0, 0)
   result <- MCMCresult$new(samples = dummy_results,
-                           times = list(sampling = dummytime))
+                           times = list(setup = 60,
+                                        sampling = 120,
+                                        burnin = 60, 
+                                        postburnin = 60))
   return(result)
 }

@@ -115,10 +115,13 @@ combineMetrics <- function(results, include_times = FALSE) {
                         list(make.row.names = FALSE))
                       )
   if(include_times) {
+    Null2NA <- function(x) if(is.null(x)) NA else x
     times <- do.call('rbind',
                      c(lapply(results,
                               function(x) {
-                                  ans <- c(x$times[['burnin']], x$times[['postburnin']], x$times[['sampling']])
+                                  ans <- c(Null2NA(x$times[['burnin']]),
+                                           Null2NA(x$times[['postburnin']]),
+                                           Null2NA(x$times[['sampling']]))
                               }))
                      )
     colnames(times) <- c("burnin", "post-burnin", "total sampling")
