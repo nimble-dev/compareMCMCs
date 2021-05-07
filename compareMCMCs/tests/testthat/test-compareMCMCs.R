@@ -57,7 +57,7 @@ test_that("compareMCMCs works with a matrix of sampled parameters", {
   expect_identical(names(res), c("jags", "nimble"))
   expect_true(inherits(res[['nimble']], "MCMCresult"))
   expect_true(inherits(res[['jags']], "MCMCresult"))
-}
+})
 
 test_that("compareMCMCs works with Stan", {
 ## This exampe is taken from the RStan vignette provided in package rstan
@@ -80,8 +80,7 @@ test_that("compareMCMCs works with Stan", {
   model {
     target += normal_lpdf(eta | 0, 1);
     target += normal_lpdf(y | theta, sigma);
-  }
-  ")
+  }\n")
   sink()
   schools_data <- list(
     J = 8,
