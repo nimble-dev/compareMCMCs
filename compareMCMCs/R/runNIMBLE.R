@@ -65,14 +65,14 @@ runNIMBLE <- function(nimbleMCMCs,
       CmvSamples <- Cmcmc$mvSamples
       samplesArray <- as.matrix(CmvSamples, varNames = monitorInfo$monitorVars)
       samplesArray <- samplesArray[, monitorInfo$monitors, drop=FALSE]
-      samplingTime <- timeResult[3]
+      samplingTime <- timeResult[1]
       burninTime <- samplingTime * MCMCcontrol$burnin / MCMCcontrol$niter
       postburninTime <- samplingTime - burninTime
       results[[mcmcTag]] <- MCMCresult$new(samples = samplesArray,
                                            times = list(sampling = samplingTime,
                                                         burnin = burninTime,
                                                         postburnin = postburninTime,
-                                                        setup = compile_time[3]),
+                                                        setup = compile_time[1]),
                                            MCMC = mcmcTag)
     } else {
       warning(paste0("There was a problem running ", mcmcTag,"."))
