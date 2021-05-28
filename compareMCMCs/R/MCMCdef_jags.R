@@ -1,4 +1,4 @@
-#' @rdname builtin-MCMCs
+#' @rdname builtin_MCMCs
 #' @export
 MCMCdef_jags <- function(MCMCinfo, 
                          MCMCcontrol, 
