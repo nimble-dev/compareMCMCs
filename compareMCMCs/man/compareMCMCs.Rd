@@ -42,7 +42,7 @@ one of several nimble special cases
 (see details below), custom nimble
 sampler configurations provided via argument
 \code{nimbleMCMCdefs}, and external MCMC engines registered via
-\code{\link{registerMCMCengine}}.  See \link{builtin-MCMCs} for information on
+\code{\link{registerMCMCengine}}.  See \link{builtin_MCMCs} for information on
 "jags" and "stan".  Support for OpenBUGS and WinBUGS is pending.}
 
 \item{monitors}{A vector of names of parameters to record in MCMC samples.}

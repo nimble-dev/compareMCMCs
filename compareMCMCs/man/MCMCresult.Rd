@@ -2,11 +2,11 @@
 % Please edit documentation in R/MCMCresult.R
 \name{MCMCresult}
 \alias{MCMCresult}
-\title{R6 class to hold MCMC sample, timing results, and metrics}
+\title{R6 class to hold MCMC samples, timing results, and metrics}
 \description{
-R6 class to hold MCMC sample, timing results, and metrics
+R6 class to hold MCMC samples, timing results, and metrics
 
-R6 class to hold MCMC sample, timing results, and metrics
+R6 class to hold MCMC samples, timing results, and metrics
 }
 \seealso{
 \code{\link{renameMCMC}} to change the name of an MCMC method throughout
@@ -170,7 +170,7 @@ how metrics are initialized.
 \if{html}{\out{<a id="method-clearMetrics"></a>}}
 \if{latex}{\out{\hypertarget{method-clearMetrics}{}}}
 \subsection{Method \code{clearMetrics()}}{
-Clear (reset) \verb{byParameter`` and/or }byMCMC`` metrics
+Clear (reset) \code{byParameter} and/or \code{byMCMC} metrics
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MCMCresult$clearMetrics(byParameter = TRUE, byMCMC = TRUE)}\if{html}{\out{</div>}}
 }

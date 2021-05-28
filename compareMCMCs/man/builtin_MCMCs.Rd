@@ -5,7 +5,7 @@
 \alias{MCMCdef_dummy}
 \alias{MCMCdef_jags}
 \alias{MCMCdef_stan}
-\alias{builtin-MCMCs}
+\alias{builtin_MCMCs}
 \title{MCMC plugins that come with the compareMCMCs package}
 \usage{
 MCMCdef_dummy(MCMCinfo, MCMCcontrol, monitorInfo, modelInfo)
@@ -24,10 +24,11 @@ with the \code{seed} argument added as a list element if it was provided.}
 \item{monitorInfo}{A list with elements \code{monitors} and \code{monitorVars}, providing
 two formats of information on model parameters for which MCMC output should be recorded.}
 
-\item{modelInfo}{The \code{MCMCinfo} argument to \code{\link{compareMCMCs}}}
+\item{modelInfo}{The \code{modelInfo} argument to \code{\link{compareMCMCs}}}
 }
 \description{
-MCMC plugins that come with the compareMCMCs package
+These functions are normally called from \code{\link{compareMCMCs}}, which passes
+its arguments or elements extracted from its arguments to these functions.
 }
 \details{
 These functions are called internally from \code{\link{compareMCMCs}}.  Each one
@@ -46,7 +47,7 @@ It does not use \code{MCMCinfo}.
 \code{MCMCdef_stan} runs Stan via package \code{rstan}.  It does not use \code{modelInfo}.  It accepts the
 following elements of the \code{MCMCinfo} list:
 \itemize{
-\item \code{file}: \code{data} argument to \code{stan_model} function in \code{rstan}.  This can alternatively be provided via \code{stan_model_args$file}.
+\item \code{file}: \code{file} argument to \code{stan_model} function in \code{rstan}.  This can alternatively be provided via \code{stan_model_args$file}.
 \item \code{data}: \code{data} argument to \code{sampling} function in \code{rstan}.  This can alternatively be provided via \code{sampling_args$data}.
 \item \code{inits}: \code{inits} argument to \code{sampling} function in \code{rstan}.  This can alternatively be provided via \code{sampling_args$inits}.
 \item \code{stan_model_args}: list of arguments to \code{stan_model}.
@@ -55,8 +56,12 @@ following elements of the \code{MCMCinfo} list:
 
 The elements \code{file}, \code{data}, and \code{inits} take precendence over corresponding entries in \code{stan_model_args} or \code{sampling_args}.
 
+If elements \code{warmup}, \code{iter}, and/or \code{thin} are provided in \code{sampling_args}, those take precedence over
+corresponding values in the \code{MCMCcontrol} argument to \code{compareMCMCs}.  Otherwise \code{iter} is set to
+\code{MCMCcontrol$niter} and \code{warmup} is set to \code{MCMCcontrol$niter/2}.  Only one chain will be run.
+
 Total sampling time for Stan is recorded via \code{system.call(sampling(...))}.  This is
 similar to how time is recorded for other MCMCs. The warmup time (called "burnin" in \code{compareMCMCs} for
 consistency across different MCMCs) is
-obtained from \code{get_elapsed_time}.  The post-burnin time is the total sampling time minus the burnin time.
+obtained from \code{rstan} function \code{get_elapsed_time}.  The post-burnin time is the total sampling time minus the burnin time.
 }

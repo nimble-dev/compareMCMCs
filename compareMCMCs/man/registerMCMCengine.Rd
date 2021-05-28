@@ -8,7 +8,7 @@ registerMCMCengine(name, fun)
 }
 \arguments{
 \item{name}{The name by which the MCMC function (or "engine") is identified
-in the \code{MCMCs} argument to \code{\link{compareMCMCs}}}
+in the \code{MCMCs} argument to \code{\link{compareMCMCs}}.}
 
 \item{fun}{The function that runs and times an MCMC.}
 }
