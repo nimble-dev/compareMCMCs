@@ -2,7 +2,7 @@
 #' 
 #' This is useful because an MCMC method name appears in multiple places
 #' 
-#' @param MCMCresult One or a named list of `MCMCresult` objects, such a returned by
+#' @param MCMCresult One or a named list of `MCMCresult` objects, such as returned by
 #' \code{\link{compareMCMCs}}.
 #' 
 #' @param newName A new (replacement) name for one of the MCMC method names
@@ -11,7 +11,7 @@
 #' 
 #' @details
 #' This replaces the MCMC label `oldName` with `newName` anywhere they appear in 
-#' the `MCMCresult` list.  This includes in various places in the `metrics` elements of
+#' the `MCMCresult` list.  This includes various places in the `metrics` elements of
 #' the `MCMCresult` objects.
 #' 
 #' If `oldName` is omitted, `MCMCresult` must be a single `MCMCresult` object, in which 

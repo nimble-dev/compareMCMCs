@@ -1,4 +1,4 @@
-#' R6 class to hold MCMC sample, timing results, and metrics
+#' R6 class to hold MCMC samples, timing results, and metrics
 #' 
 #' @seealso \code{\link{renameMCMC}} to change the name of an MCMC method throughout
 #' the structure of
@@ -134,7 +134,7 @@ MCMCresult <- R6Class(
       TRUE
     },
    #' @description 
-   #' Clear (reset) `byParameter`` and/or `byMCMC`` metrics
+   #' Clear (reset) `byParameter` and/or `byMCMC` metrics
    #' @param byParameter `logical` indicating whether to clear `byParameter` metrics
    #' @param byMCMC `logical` indicating whether to clear `byMCMC` metrics
    #' @details 

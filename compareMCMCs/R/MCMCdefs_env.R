@@ -3,7 +3,7 @@ MCMCdefs_env <- new.env()
 #' Register an MCMC function for use by compareMCMCs
 #' 
 #' @param name The name by which the MCMC function (or "engine") is identified
-#' in the `MCMCs` argument to \code{\link{compareMCMCs}}
+#' in the `MCMCs` argument to \code{\link{compareMCMCs}}.
 #' 
 #' @param fun The function that runs and times an MCMC.
 #' 
@@ -72,7 +72,7 @@ registerMCMCengine('stan', MCMCdef_stan)
 #' Total sampling time for Stan is recorded via `system.call(sampling(...))`.  This is
 #' similar to how time is recorded for other MCMCs. The warmup time (called "burnin" in `compareMCMCs` for
 #' consistency across different MCMCs) is 
-#' obtained from `get_elapsed_time`.  The post-burnin time is the total sampling time minus the burnin time.
+#' obtained from `rstan` function `get_elapsed_time`.  The post-burnin time is the total sampling time minus the burnin time.
 #' 
 #' @name builtin_MCMCs
 NULL
