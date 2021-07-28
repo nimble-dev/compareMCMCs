@@ -117,13 +117,17 @@ MCMCdef_stan_impl <- function(MCMCinfo,
   
   stan_times <- rstan::get_elapsed_time(stan_out)
   burninTime <- stan_times[1]
-  samplingTime <- runTime[1]
+  samplingTime <- runTime[3]
   postburninTime <- samplingTime - burninTime
-  
+    
   ## return MCMCresult object, with samples and time populated
   ## SP 'sample' is the default tilme                                         
   result <- MCMCresult$new(samples = samplesArray,
-                           times = list(setup = compileTime[1],
+                           times = list(setup_system.time = compileTime,
+                                        # burnin_system.time not available as a system.time because burnin comes from rstan::get_elapsed_time
+                                        # postburnin_system.time ditto
+                                        sampling_system.time = runTime,
+                                        setup = compileTime[3],
                                         burnin = burninTime,
                                         postburnin = postburninTime,
                                         sampling = samplingTime))

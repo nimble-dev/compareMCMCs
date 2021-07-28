@@ -27,13 +27,13 @@ MCMCdef_jags_impl <- function(MCMCinfo,
                                   n.chains=1,
                                   quiet=FALSE)
     })
-    setupTime <- setupTimeResult[1]
+    setupTime <- setupTimeResult[3]
     
     burninTime <- 0
     if(MCMCcontrol$burnin > 0) {
         burninTimeResult <- system.time(update(object = jags_mod,
                                                n.iter = MCMCcontrol$burnin))
-        burninTime <- burninTimeResult[1]
+        burninTime <- burninTimeResult[3]
     }
 
     postburninTimeResult <- system.time({
@@ -42,12 +42,15 @@ MCMCdef_jags_impl <- function(MCMCinfo,
                                       n.iter=MCMCcontrol$niter - MCMCcontrol$burnin,
                                       thin=MCMCcontrol$thin)
     })
-    postburninTime <- postburninTimeResult[1]
+    postburninTime <- postburninTimeResult[3]
     
     monitorNodesBUGS <<- gsub(' ', '', monitorInfo$monitors)
     samplesArray <- jags_out[[1]][, monitorNodesBUGS, drop=FALSE]
     result <- MCMCresult$new(samples = samplesArray,
-                             times = list(setup = setupTime,
+                             times = list(setup_system.time = setupTimeResult,
+                                          burnin_system.time = burninTimeResult,
+                                          postburnin_system.time = postburninTime,
+                                          setup = setupTime,
                                           sampling = postburninTime + burninTime,
                                           burnin = burninTime,
                                           postburnin = postburninTime))
