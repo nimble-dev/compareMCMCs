@@ -4,7 +4,7 @@ compareMCMCs is a package for running, managing, and comparing results from diff
 
 The User Manual (aka package vignette) giving an overview of compareMCMCs can be viewed [here](https://htmlpreview.github.io/?https://github.com/nimble-dev/compareMCMCs/blob/master/compareMCMCs/doc/compareMCMCs.html).
 
-Right now, compareMCMCs works with NIMBLE and JAGs models.  We plan to add some additional features before releasing it on CRAN.
+Right now, compareMCMCs works with NIMBLE, JAGS and Stan.  It has a plug-in system to make it easy to include other MCMC engines in comparisons.
 
 compareMCMCs allows you to configure a set of MCMCs to run and then automatically time them and process their results to generate html output with comparisons of efficiency and posterior distributions. This system started life as part of the nimble package. Although it is now a separate package, it remains somewhat nimble-centric.
 
