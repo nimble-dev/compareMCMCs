@@ -10,6 +10,8 @@ test_that("compareMCMCs works", {
   expect_identical(names(res), c("dummy"))
   expect_true(inherits(res[['dummy']], "MCMCresult"))
   expect_true(inherits(res$dummy$metrics$byParameter, "data.frame"))
-  expect_true(identical(as.character(unique(res$dummy$metrics$byParameter$MCMC)), "dummy"))
+  expect_true(
+    identical(as.character(unique(res$dummy$metrics$byParameter$MCMC)),
+              "dummy"))
 }
 )

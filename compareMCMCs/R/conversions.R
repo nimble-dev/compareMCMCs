@@ -10,32 +10,40 @@
 #' 
 #' Create transformed parameters from original parameters in MCMC output
 #' 
-#' @param samples One of: an \code{\link{MCMCresult}} object; a named list of `MCMCresult` objects
-#' (such as returned by \code{\link{compareMCMCs}}); a matrix of MCMC samples
-#'  (such as the `samples` element of an `MCMCresult` object); or a named list of such matrices.
+#' @param samples One of: an \code{\link{MCMCresult}} object; a named
+#'     list of `MCMCresult` objects (such as returned by
+#'     \code{\link{compareMCMCs}}); a matrix of MCMC samples (such as
+#'     the `samples` element of an `MCMCresult` object); or a named
+#'     list of such matrices.
 #'  
-#' @param conversions One of: a list of conversion specifications (see below); a named list 
-#' of conversion specifications, with names matching those of a list provided for `samples`.
+#' @param conversions One of: a list of conversion specifications (see
+#'     below); a named list of conversion specifications, with names
+#'     matching those of a list provided for `samples`.
 #'  
-#' @details 
-#' A conversion specification is a named list. For each element:
+#' @details A conversion specification is a named list. For each
+#'     element:
 #' 
-#'  - its name will be the name of a new column appended to a `samples` matrix.
-#'  - its value should be a character string that can be parsed as code to 
-#'  calculate elements of the new column.  It can use existing column names in
-#'  `samples`.  Calculations will be done row-wise.  Column names are often
-#'  something like "beta\[2\]".  To have this used as a name, enclose it in backticks,
-#'  e.g. "`` `beta[2]` ``".  For example, an entry could be ``log_beta2 = "log(`beta\[2\]`)"``. 
+#' - its name will be the name of a new column appended to a `samples` matrix.
+#'
+#' - its value should be a character string that can be parsed as code
+#'  to calculate elements of the new column.  It can use existing
+#'  column names in `samples`.  Calculations will be done row-wise.
+#'  Column names are often something like "beta\[2\]".  To have this
+#'  used as a name, enclose it in backticks, e.g. "`` `beta[2]` ``".
+#'  For example, an entry could be ``log_beta2 = "log(`beta\[2\]`)"``.
 #'  A list value of `NULL` will remove the named column.
 #'
-#'  The conversion specification list will be processed in order.  This allows creating 
-#'  new columns and removing old ones in a sensible order.
+#'  The conversion specification list will be processed in order.
+#'  This allows creating new columns and removing old ones in a
+#'  sensible order.
 #'  
-#'  If both `conversions` and `samples` are named lists, they will be matched:
-#'  the `conversions` element (itself a list of conversion specifications) used on
-#'   a `samples` element will have the same name.
+#'  If both `conversions` and `samples` are named lists, they will be
+#'  matched: the `conversions` element (itself a list of conversion
+#'  specifications) used on a `samples` element will have the same
+#'  name.
 #'  
-#' @return An object of the same type as `samples` after application of conversions.
+#' @return An object of the same type as `samples` after application
+#'     of conversions.
 #'  
 #' @export
 applyConversions <- function(samples,
@@ -66,13 +74,14 @@ applyConversions <- function(samples,
   for(i in seq_along(conversions)) {
     new_column_name <- conversionNames[i]
     if(is.null(conversions[[i]])) {
-      workSamples[[new_column_name]] <- NULL ## This removes the column, if it existed
+      ## This removes the column, if it existed
+      workSamples[[new_column_name]] <- NULL 
       next
     }
     if(is.character(conversions[[i]]) | is.call(conversions[[i]])) {
       if(is.character(conversions[[i]])) {
         if(conversions[[i]][1] == "") {
-          workSamples[[new_column_name]] <- NULL ## Another way to remove a column
+          workSamples[[new_column_name]] <- NULL
           next  
         } else {
           code <- parse(text = conversions[[i]][1],

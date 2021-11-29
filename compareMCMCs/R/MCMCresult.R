@@ -1,55 +1,65 @@
 #' R6 class to hold MCMC samples, timing results, and metrics
 #' 
-#' @seealso \code{\link{renameMCMC}} to change the name of an MCMC method throughout
-#' the structure of
-#' a list of `MCMCresult` objects.
+#' @seealso \code{\link{renameMCMC}} to change the name of an MCMC
+#'     method throughout the structure of a list of `MCMCresult`
+#'     objects.
 #' 
 #' @export
-MCMCresult <- R6Class(
+MCMCresult <- R6::R6Class(
   classname = "MCMCresult",
   portable = TRUE,
   public = list(
     #' @field MCMC Optional name for the MCMC method.
     MCMC = character(),
-    #' @field samples Matrix of MCMC samples. Rows are for MCMC iterations.  Columns are for 
-    #' parameters.  Columns must be named.
+    #' @field samples Matrix of MCMC samples. Rows are for MCMC
+    #' iterations.  Columns are for parameters.  Columns must be
+    #' named.
     samples = NULL,
-    #' @field times A list of times including elements for `setup`, `burnin`,
-    #'  `postburnin` (sampling for recorded samples), and `sampling` (normally
-    #'  `burnin` + `postburnin`).  Each list element should be a single numeric value.
+    #' @field times A list of times including elements for `setup`,
+    #' `burnin`,  `postburnin` (sampling for recorded samples), and
+    #' `sampling` (normally  `burnin` + `postburnin`).  Each list
+    #' element should be a single numeric value.
     times = list(),
-    #' @field metrics A list of MCMC performance metrics such as effective sample size 
-    #' (ESS), efficiency, mean, median, and credible interval boundaries. `metrics`
-    #' is organized as a list with three elements: `byMCMC`, `byParameter`, and `other`
+    #' @field metrics A list of MCMC performance metrics such as
+    #' effective sample size (ESS), efficiency, mean, median, and
+    #' credible interval boundaries. `metrics` ' is organized as a list
+    #' with three elements: `byMCMC`, `byParameter`, and `other` '
     #' (currently unused). 
-    #' 
+    #'
     #' `byMCMC` is for metrics with one number for an entire
-    #' MCMC sample (as opposed to one number for each parameter).  `byMCMC` is a
-    #' data frame with one row and columns for MCMC name
-    #' each metric.  These would be metrics where there is a single scalar for the
-    #' entire MCMC, such as min(efficiency).
-    #' 
+    #' MCMC sample (as opposed to one number for each parameter).
+    #' `byMCMC` is a data frame with one row and columns for MCMC name
+    #' each metric.  These would be metrics where there is a single
+    #scalar for the ' entire MCMC, such as min(efficiency). 
+    #'
     #' `byParameter` is for metrics with one number for each parameter in each
     #' MCMC sample.  `byParameter` is a `data.frame` with one row for each 
-    #' MCMC-x-parameter combination and columns for MCMC method, parameter name, and
-    #' each metric.  There will only be one MCMC method name (all entries in the
+    #' MCMC-x-parameter combination and columns for MCMC method,
+    #' parameter name, and
+    #' each metric.  There will only be one MCMC method name
+    #' (all entries in the
     #'  MCMC column will be the same).  
-    #'  
+    #'
     #'  The MCMC columns in `byMCMC` and `byParameter`
     #'  are useful for combining
     #'  `metrics` from a list of `MCMCresult` objects,
     #'   such as done by \code{\link{combineMetrics}}, and for retaining
-    #'  MCMC method labels if these `data.frames` are copied and used outside of
+    #'  MCMC method labels if these `data.frames` are copied and used
+    #'  outside of
     #'  an `MCMCresult` object.
-    #'  
+    #'
     #'  `other` is simply an arbitrary list. This allows arbitrarily structured
     #'   metrics to be saved.
-    #'   
-    #'   Elements of `metrics` are normally populated by `addMetrics` or `compareMCMCs`
+    #'
+    #'   Elements of `metrics` are normally populated by `addMetrics` or
+    #'   `compareMCMCs`
     #'   (which calls `addMetrics`).
     metrics = list(byMCMC = NULL,
                    byParameter = NULL,
                    other = list()),
+    #' @field sessionInfo Result of running `sessionInfo()` prior to calling
+    #' an MCMC engine, if requested.
+    sessionInfo = NULL,
     #' @description
     #' Create a new `MCMCresult` object.
     #' @param ... Arbitrary initialization.  If a matrix is passed, it
@@ -135,19 +145,23 @@ MCMCresult <- R6Class(
     },
    #' @description 
    #' Clear (reset) `byParameter` and/or `byMCMC` metrics
-   #' @param byParameter `logical` indicating whether to clear `byParameter` metrics
+   #' @param byParameter `logical` indicating whether to clear `byParameter`
+   #' metrics
    #' @param byMCMC `logical` indicating whether to clear `byMCMC` metrics
    #' @details 
    #' `byParameter` metrics are initialized to a `data.frame` with columns for 
-   #' `MCMC` (all the same entry, the `MCMC` field) and `Parameter` (taken from column
+   #' `MCMC` (all the same entry, the `MCMC` field) and `Parameter`
+   #' (taken from column
    #' names of the `samples`).
    #' 
-   #' `byMCMC` metrics are initialized to a `data.frame` with a column for `MCMC`.
+   #' `byMCMC` metrics are initialized to a `data.frame`
+   #' with a column for `MCMC`.
    clearMetrics = function(byParameter = TRUE, byMCMC = TRUE) {
      if(byParameter) {
        params <- colnames(self$samples)
-       self$metrics$byParameter <- data.frame(MCMC = rep(self$MCMC, length(params)),
-                                              Parameter = params)
+       self$metrics$byParameter <-
+           data.frame(MCMC = rep(self$MCMC, length(params)),
+                      Parameter = params)
      }
      if(byMCMC)
        self$metrics$byMCMC <- data.frame(MCMC = self$MCMC)
@@ -155,23 +169,30 @@ MCMCresult <- R6Class(
    #' @description 
    #' Add one set of metric results
    #' 
-   #' @param metricResult A list with possible elements `byParameter`, `byMCMC`, and
-   #' `other`.  These are typically returned from a metric function called via
-   #' `addMetric`. Each is combined with previous metrics already in the corresponding
+   #' @param metricResult A list with possible elements `byParameter`,
+   #' `byMCMC`, and
+   #' `other`.  These are typically returned from a metric function
+   #' called via
+   #' `addMetric`. Each is combined with previous metrics already in the
+   #' corresponding
    #' elements of `metrics`.
     addMetricResult = function(metricResult) {
       if(!self$initializeMetrics()) {
-        stop("Can't add metric results until metrics can be initialized.  This requires samples and a MCMC name.")
+        stop(
+          paste0("Can't add metric results until metrics can be initialized.",
+                 " This requires samples and a MCMC name."))
       }
-      ## metric may be a list with elements named byMCMC, byParameter, and/or other
+      ## metric may be a list with elements named byMCMC,
+      ## byParameter, and/or other
       validNames <- names(metricResult) %in% c("byMCMC", "byParameter", "other")
       if(!all(validNames)) {
           iInvalidNames <- which(!validNames)
-          warning(paste0('metric input with names ', paste(names(metricResult)[iInvalidNames], collapse = ', '), ' will be ignored.'))
+          warning(paste0('metric input with names ',
+                         paste(names(metricResult)[iInvalidNames],
+                               collapse = ', '), ' will be ignored.'))
           metricResult <- metricResult[validNames]
       }
       if(!is.null(metricResult$byMCMC)) {
-        ## To do: add checks that metricResult is a data frame with appropriate structure
         for(i in seq_along(metricResult$byMCMC)) {
           thisMetric <- metricResult$byMCMC[[i]]
           thisMetricName <- names(metricResult$byMCMC)[i]
@@ -179,8 +200,6 @@ MCMCresult <- R6Class(
             thisMetricList <- structure(list(thisMetric),
                                         names = thisMetricName)
           }
-          ## To do: add checks that metricResult is a data frame with appropriate structure
-          ## or additional checks on valid metricResult input
           self$metrics$byMCMC <- merge(self$metrics$byMCMC, thisMetricList)
         }
       }
@@ -191,16 +210,16 @@ MCMCresult <- R6Class(
           if(is.vector(thisMetric)) {
             thisMetricList <- structure(list(thisMetric), names = self$MCMC)
           }
-        ## To do: add checks that metricResult is a data frame with appropriate structure
-        ## or additional checks on valid metricResult input
-          thisTidyMetric <- melt(do.call('rbind', thisMetricList),
-                                 varnames = c('MCMC', 'Parameter'),
-                                 value.name = thisMetricName)
-          self$metrics$byParameter <- merge(self$metrics$byParameter, thisTidyMetric)
+          thisTidyMetric <- reshape2::melt(do.call('rbind', thisMetricList),
+                                           varnames = c('MCMC', 'Parameter'),
+                                           value.name = thisMetricName)
+          self$metrics$byParameter <- merge(self$metrics$byParameter,
+                                            thisTidyMetric)
         }
       }
       if(!is.null(metricResult$other)) {
-        if(!is.list(metricResult$other)) stop('metricResult must be a list if provided with other=TRUE.')
+        if(!is.list(metricResult$other))
+          stop('metricResult must be a list if provided with other=TRUE.')
         self$metrics$other <- c(self$metrics$other, metricResult)
       }
       self

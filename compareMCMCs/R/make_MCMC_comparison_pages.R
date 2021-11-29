@@ -1,81 +1,70 @@
 compareMCMCs_registered_pageComponents <- new.env()
 
+#' Register, unregister and access page components used by
+#' \code{make_MCMC_comparison_pages}
+#'
+#' @name pageComponents
+#' @aliases registerPageComponents unregisterPageComponents getPageComponents
+#'
+#' @param pageComponents A named list of new page components to register
+#' @param name Character name of a page component to unregister
+#'
+#' @details A page component is an element that can be included in an
+#'   MCMC comparison page by naming it in the \code{pageComponents}
+#'   argument to \code{make_MCMC_comparison_pages}. See package
+#'   vignette for explanation page components.
+#'
+#' @seealso \link{make_MCMC_comparison_pages}
+NULL
+
+#' @rdname pageComponents
 #' @export
 registerPageComponents <- function(pageComponents) {
   list2env(pageComponents, compareMCMCs_registered_pageComponents)
 }
 
+#' @rdname pageComponents
 #' @export
 unregisterPageComponents <- function(name) {
   rm(list = name, envir = compareMCMCs_registered_pageComponents)
 }
 
+#' @rdname pageComponents
 #' @export
 getPageComponents <- function() {
   compareMCMCs_registered_pageComponents
 }
-
-## Set up library for building page components
-registerPageComponents(list(timing = list(make = 'timeComparisonComponent',
-                                          linkText = "MCMC sampling time"),
-                            efficiencySummary = list(make = 'minMeanComparisonComponent',
-                                                     fileSuffix = "_efficiencySummary",
-                                                     linkText = "MCMC efficiency summary",
-                                                     control = list(invert = FALSE,  # these are the defaults but are provided explicitly for clarity
-                                                                    min_efficiency_name = "min_efficiency", 
-                                                                    mean_efficiency_name = "mean_efficiency",
-                                                                    suffix = "")),
-                            efficiencySummaryAllParams = list(make = 'minMeanAllComparisonComponent',
-                                                              fileSuffix = "_efficiencySummaryAll",
-                                                              linkText = "MCMC efficiency summary (with all parameters)",
-                                                              plot = 'plotMinMeanAll',
-                                                              control = list(invert = FALSE,  # these are the defaults but are provided explicitly for clarity
-                                                                             min_efficiency_name = "min_efficiency", 
-                                                                             mean_efficiency_name = "mean_efficiency",
-                                                                             efficiency_name = "efficiency",
-                                                                             suffix = "")),
-                            paceSummaryAllParams = list(make = 'minMeanAllComparisonComponent',
-                                                        fileSuffix = "_paceSummaryAll",
-                                                        linkText = "MCMC pace summary (with all parameters)",
-                                                        plot = 'plotMinMeanAll',
-                                                        control = list(invert = TRUE)),
-                            efficiencyDetails = list(make = 'efficiencyDetailsComparisonComponent',
-                                                     fileSuffix = "_efficiencyDetails",
-                                                     linkText = "MCMC efficiency details",
-                                                     control = list(ncol = 4,
-                                                                    efficiencyName = "efficiency",
-                                                                    suffix = "")),
-                            posteriorSummary = list(make = 'posteriorSummaryComparisonComponent',
-                                                    fileSuffix = "_posteriorSummary",
-                                                    linkText = "Posterior summaries",
-                                                    control = list(ncol = 4)))
-)
 
 #' Create html output with comparisons of MCMC results
 #' 
 #' @param comparisonResults An list of `MCMCresult` objects 
 #' such as returned by \code{\link{compareMCMCs}}.
 #' 
-#' @param dir A directory in which to place the html file and any figure files used in it.
+#' @param dir A directory in which to place the html file and any
+#'   figure files used in it.
 #' 
-#' @param pageComponents A list whose names are registered page components and values
-#' are `TRUE` (to include a component) or `FALSE` (to omit a component).  Components
-#' can also be omitted by leaving them out of the list.
+#' @param pageComponents A list whose names are registered page
+#'   components and values are `TRUE` (to include a component) or
+#'   `FALSE` (to omit a component).  Components can also be omitted by
+#'   leaving them out of the list.
 #' 
-#' @param modelName A name to be used for the model in generated output.
+#' @param modelName A name to be used for the model in generated
+#'   output.
 #' 
 #' @param control A named list of control parameters.
 #' 
-#' @param plot `TRUE` to generate results, `FALSE` not to do so.  Use of `FALSE` is 
-#' useful if one wants to use the returned object (including plottable components)
-#' in one's own way.
+#' @param plot `TRUE` to generate results, `FALSE` not to do so.  Use
+#'   of `FALSE` is useful if one wants to use the returned object
+#'   (including plottable components) in one's own way.
 #' 
 #' @details
 #' 
-#' See package vignette for information about page components, including about default 
-#' page components and how to write and register new page components.
+#' See package vignette for information about page components,
+#' including about default page components and how to write and
+#' register new page components.
 #' 
-#' To see built-in page components and their options, use `as.list(getPageComponents())`.
+#' To see built-in page components and their options, use
+#' `as.list(getPageComponents())`.
 #' 
 #' @return 
 #' 
@@ -90,8 +79,9 @@ make_MCMC_comparison_pages <- function(comparisonResults,
                                        modelName = "model",
                                        control,
                                        plot = TRUE) {
-  ## pageComponents can have standard names with TRUE or FALSE or it can a list with elements
-  ## control options include makeTopPage and mainPageName
+  ## pageComponents can have standard names with TRUE or FALSE or it
+  ## can a list with elements control options include makeTopPage and
+  ## mainPageName
 
   ## Establish directory and work there.
   curDir <- getwd()
@@ -160,11 +150,11 @@ make_MCMC_comparison_pages <- function(comparisonResults,
         filename <- paste0(modelName,
                            pageComponents[[j]]$fileSuffix,
                            '.jpg')
-        jpeg(filename = filename,
-             height = madePageComponents[[j]]$height,
-             width = madePageComponents[[j]]$width,
-             units = 'in',
-             res = 300)
+        grDevices::jpeg(filename = filename,
+                        height = madePageComponents[[j]]$height,
+                        width = madePageComponents[[j]]$width,
+                        units = 'in',
+                        res = 300)
         eval(call(
           if(is.null(pageComponents[[j]][['plot']]))
             'plot'
@@ -172,7 +162,7 @@ make_MCMC_comparison_pages <- function(comparisonResults,
             pageComponents[[j]][['plot']],
           madePageComponents[[j]]$plottable
         ))
-        dev.off()
+        grDevices::dev.off()
       }
     }
 
@@ -191,7 +181,8 @@ make_example_html <- function(modelName,
   numComponents <- length(pageComponents)
   if(numComponents == 0) return()
   tags <- paste0('p', 1:numComponents)
-  linkTexts <- unlist(lapply(pageComponents, `[[`, 'linkText')) ## NULLs are dropped
+  linkTexts <- unlist(lapply(pageComponents, `[[`, 'linkText'))
+  ## NULLs are dropped by unlist
   headerLinkEntries <- paste(paste0("<a href='#",
                                     tags,
                                     "'>",
@@ -215,7 +206,9 @@ make_example_html <- function(modelName,
                           linkTexts[[i]],
                           "</h2>\n",
                           print(madePageComponents[[i]][['printable']],
-                                type = 'html', print.results = FALSE, include.rownames = FALSE)
+                                type = 'html',
+                                print.results = FALSE,
+                                include.rownames = FALSE)
                           )
       else
         element <- paste0("<h2 id='",
@@ -241,7 +234,7 @@ make_example_html <- function(modelName,
     pageComponentEntries <- append(pageComponentEntries, element)
   }
 
-  html=paste0("<!DOCTYPE html PUBLIC>
+  html <- paste0("<!DOCTYPE html PUBLIC>
               <html>
               <head>
               <link rel='stylesheet' type='text/css' href='style.css'/>
@@ -275,13 +268,14 @@ minMeanComparisonComponent <- function(comparisonResults,
     stop('Package ggplot2 is required but is not installed.')
 
   if(missing(control)) control <- list()
-  defaults <- list(invert = FALSE,  ## If TRUE, do Pace = seconds/ESS instead of Efficiency = ESS/second
+  ## If invert is TRUE, do Pace = seconds/ESS, else do Efficiency = ESS/second
+  defaults <- list(invert = FALSE,                   
                    min_efficiency_name = "min_efficiency",
                    mean_efficiency_name = "mean_efficiency",
                    suffix = "")
   control <- updateDefaults(defaults, control)
   invert <- control$invert
-  min_efficiency_name <- paste0(control$min_efficiency_name, control$suffix) #STOPPED_HERE
+  min_efficiency_name <- paste0(control$min_efficiency_name, control$suffix) 
   mean_efficiency_name <- paste0(control$mean_efficiency_name, control$suffix) 
   
   byMCMC <- comparisonResults$byMCMC
@@ -290,7 +284,8 @@ minMeanComparisonComponent <- function(comparisonResults,
                     mean_efficiency_name)
   if(!all(columnsToUse %in% colnames(byMCMC))) {
     missingCols <- columnsToUse[!(columnsToUse %in% colnames(byMCMC))]
-    warnings(paste0("MCMC column names ", paste(missingCols, collapse = ','), " expected but not found for minMeanComparisonComponent."))
+    warnings(paste0("MCMC column names ", paste(missingCols, collapse = ','),
+                    " expected but not found for minMeanComparisonComponent."))
     return(NULL)
   }
   efficiencyResults <- byMCMC[, columnsToUse]
@@ -302,17 +297,23 @@ minMeanComparisonComponent <- function(comparisonResults,
 
 ##  Efficiency <- comparisonResults$Efficiency
   if(invert) Efficiency$Efficiency <- 1/Efficiency$Efficiency
-  if(invert) levels(Efficiency$type)[ levels(Efficiency$type) == 'minimum' ] <- 'maximum'
+  if(invert)
+    levels(Efficiency$type)[ levels(Efficiency$type) == 'minimum' ] <- 'maximum'
   ylabel <- if(!invert)
     'Effective sample size\n per second'
   else
     'Seconds per\n effective sample'
   title <- if(!invert)
-    "MCMC efficiency summary\n (Minimum and mean effective sample size per second)"
+             paste0("MCMC efficiency summary\n",
+                    "(Minimum and mean effective sample size per second)")
   else
     "MCMC pace summary\n (Maximum and mean seconds per effective sample)"
-  if(length(unique(Efficiency$MCMC)) * length(unique(Efficiency$type)) == length(Efficiency$MCMC)) {
-    p=ggplot2::ggplot(Efficiency, ggplot2::aes_string(x = "MCMC", y= "Efficiency", fill = "MCMC")) +
+  if(length(unique(Efficiency$MCMC)) * length(unique(Efficiency$type)) ==
+       length(Efficiency$MCMC)) {
+    p <- ggplot2::ggplot(Efficiency,
+                         ggplot2::aes_string(x = "MCMC",
+                                             y= "Efficiency",
+                                             fill = "MCMC")) +
       ggplot2::geom_bar(position=ggplot2::position_dodge(),stat='identity') +
       ggplot2::ggtitle(title)+
       ggplot2::facet_wrap(~ type,ncol=2,scales='free') +
@@ -321,9 +322,17 @@ minMeanComparisonComponent <- function(comparisonResults,
   } else {
     ## there are multiple runs
     title <- paste0(title, "\n \"-\" shows mean.")
-    p=ggplot2::ggplot(Efficiency, ggplot2::aes_string(x = "MCMC", y = "Efficiency", fill = "MCMC", color = "MCMC")) +
+    p <- ggplot2::ggplot(Efficiency,
+                         ggplot2::aes_string(x = "MCMC",
+                                             y = "Efficiency",
+                                             fill = "MCMC",
+                                             color = "MCMC")) +
       ggplot2::geom_point(stat='identity')+
-      ggplot2::stat_summary(fun.y = 'mean', fun.ymin = function(x) x, fun.ymax = function(x) x, shape = '-', size = 4) +
+      ggplot2::stat_summary(fun.y = 'mean',
+                            fun.ymin = function(x) x,
+                            fun.ymax = function(x) x,
+                            shape = '-',
+                            size = 4) +
       ggplot2::ggtitle(title)+
       ggplot2::facet_wrap(~ type,ncol=2,scales='free') +
       ggplot2::ylab(ylabel) +
@@ -349,13 +358,11 @@ minMeanAllComparisonComponent <- function(comparisonResults,
 }
 
 allParamEfficiencyComparisonComponent <- function(comparisonResults,
-                                                ##  modelName,
                                                   control) {
   if(!requireNamespace('ggplot2', quietly = TRUE))
       stop('ggplot2 is required but not installed.')
 
   vars <- comparisonResults$byParameter
-##  vars <- comparisonResults$varSummaries
   if(missing(control)) control <- list()
   defaults <- list(invert = FALSE,
                    efficiency_name = "efficiency",
@@ -372,13 +379,14 @@ allParamEfficiencyComparisonComponent <- function(comparisonResults,
   title <- if(!invert) "MCMC efficiency for\n each parameter"
   else "MCMC pace for\n each parameter"
 
-  replicatedRuns <- !(length(unique(vars$MCMC)) * length(unique(vars$Parameter)) ==
-                      length(vars[[efficiency_name]]))
+  replicatedRuns <-
+    !(length(unique(vars$MCMC)) * length(unique(vars$Parameter)) ==
+        length(vars[[efficiency_name]]))
 
   if(replicatedRuns) {
-      vars <- aggregate(vars[[efficiency_name]],
-                        list(vars$method, vars$var),
-                        mean)
+      vars <- stats::aggregate(vars[[efficiency_name]],
+                               list(vars$method, vars$var),
+                               mean)
     colnames(vars) <- c('MCMC', 'Parameter', "Efficiency")
     title <- paste("Mean", title)
   }
@@ -391,19 +399,19 @@ allParamEfficiencyComparisonComponent <- function(comparisonResults,
       ggplot2::geom_point() +
       ggplot2::geom_line() +
       ggplot2::ylab(ylabel) +
-    ##     guides(colour = ggplot2::guide_legend(title = "Parameter", override.aes = list(shape = NULL, size = 0.5))) +
       ggplot2::guides(colour = ggplot2::guide_legend(title = "Parameter")) +
       ggplot2::ggtitle(title)
   if(replicatedRuns)
       p <- p +
-          ggplot2::stat_summary(mapping = ggplot2::aes(x = "MCMC", y = efficiency_name),
-                                data = vars,
-                                inherit.aes = FALSE,
-                                fun.y = 'mean',
-                                fun.ymin = function(x) x,
-                                fun.ymax = function(x) x,
-                                shape = '-',
-                                size = 2)
+        ggplot2::stat_summary(
+          mapping = ggplot2::aes(x = "MCMC", y = efficiency_name),
+          data = vars,
+          inherit.aes = FALSE,
+          fun.y = 'mean',
+          fun.ymin = function(x) x,
+          fun.ymax = function(x) x,
+          shape = '-',
+          size = 2)
   list(plottable = p,
        height = 6,
        width = 5,
@@ -423,18 +431,33 @@ efficiencyDetailsComparisonComponent <- function(comparisonResults,
   
   ncol <- control$ncol
   if(length(unique(df$Parameter)) * length(unique(df$MCMC)) == nrow(df)) {
-    p=ggplot2::ggplot(df,ggplot2::aes_string(x = "MCMC", y= efficiency_name, fill = "MCMC"))+ ##y = size_time
+    p <- ggplot2::ggplot(df,
+                         ggplot2::aes_string(x = "MCMC",
+                                             y= efficiency_name,
+                                             fill = "MCMC"))+ 
       ggplot2::geom_bar(position=ggplot2::position_dodge(),stat='identity')+
-      ggplot2::ggtitle("MCMC efficiency details\n (Effective sample size per second for each parameter)")+
+      ggplot2::ggtitle(
+        paste0("MCMC efficiency details\n",
+               "(Effective sample size per second for each parameter)")) +
       ggplot2::ylab('Effective sample size per second') +
       ggplot2::facet_wrap(~ Parameter,ncol=ncol,scales='free') +
       ggplot2::theme(legend.position = "top")
   } else {
     ## multiple points for each method
-    p=ggplot2::ggplot(df,ggplot2::aes_string(x = "MCMC" ,y = efficiency_name, fill = "MCMC", color = "MCMC")) + ##y = size_time
+    p <- ggplot2::ggplot(df,
+                         ggplot2::aes_string(x = "MCMC" ,
+                                             y = efficiency_name,
+                                             fill = "MCMC", color = "MCMC")) +
       ggplot2::geom_point(stat='identity') +
-      ggplot2::stat_summary(fun.y = 'mean', fun.ymin = function(x) x, fun.ymax = function(x) x, shape = '-', size = 4) +
-      ggplot2::ggtitle("MCMC efficiency details\n (Effective sample size per second for each parameter)\n \"-\" shows mean.")+
+      ggplot2::stat_summary(fun.y = 'mean',
+                            fun.ymin = function(x) x,
+                            fun.ymax = function(x) x,
+                            shape = '-',
+                            size = 4) +
+      ggplot2::ggtitle(
+        paste0("MCMC efficiency details\n",
+               "(Effective sample size per second for each parameter)\n",
+               "\"-\" shows mean."))+
       ggplot2::ylab('Effective sample size per second') +
       ggplot2::facet_wrap(~ Parameter,ncol=ncol,scales='free') +
       ggplot2::theme(legend.position = "top")
@@ -442,13 +465,18 @@ efficiencyDetailsComparisonComponent <- function(comparisonResults,
   numVars <- length(unique(df[,'Parameter']))
   height <- max(floor(numVars*4.5/3),
                 3)
-  list(plottable = p, height = height, width = 12, html_img_args = paste0("height=\"",height*100,"\" width=\"1200\""))
+  list(plottable = p,
+       height = height,
+       width = 12,
+       html_img_args = paste0("height=\"",height*100,"\" width=\"1200\""))
 }
 
 plotMinMeanAll <- function(plottable) {
   requireNamespace('grid', quietly = TRUE)
-  print(plottable[['minMean']], vp = grid::viewport(x = .25, y = 0.5, width = 0.5, height = 1.0))
-  print(plottable[['allParams']], vp = grid::viewport(x = .75, y = 0.5, width = 0.5, height = 1.0))
+  print(plottable[['minMean']],
+        vp = grid::viewport(x = .25, y = 0.5, width = 0.5, height = 1.0))
+  print(plottable[['allParams']],
+        vp = grid::viewport(x = .75, y = 0.5, width = 0.5, height = 1.0))
 }
 
 
@@ -464,14 +492,15 @@ posteriorSummaryComparisonComponent <- function(comparisonResults,
                      ggplot2::aes_string(x = "MCMC", y = "mean")) +
     ggplot2::geom_point(ggplot2::aes_string(color= "MCMC" ,size=1)) +
     ggplot2::ggtitle("Posterior mean, median, and 95% CIs") +
-    ggplot2::guides(size=FALSE,
-                    colour=FALSE) +
+    ggplot2::guides(size="none",
+                    colour="none") +
     ggplot2::geom_point(ggplot2::aes_string(x = "MCMC", y = "median", size=1),
                         shape=4) +
     ggplot2::facet_wrap(~ Parameter,
                         ncol=ncol,
                         scales='free') +
-    ggplot2::geom_errorbar(ggplot2::aes_string(ymax = "CI95_upp", ymin = "CI95_low"),
+    ggplot2::geom_errorbar(ggplot2::aes_string(ymax = "CI95_upp",
+                                               ymin = "CI95_low"),
                            width=.25) +
     ggplot2::labs(y = 'Posterior values')
 

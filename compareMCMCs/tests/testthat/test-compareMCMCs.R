@@ -1,7 +1,7 @@
 context("Testing compareMCMCs")
 
 test_that("compareMCMCs works with one sampled parameter", {
-  mc <- nimbleCode({a ~ dnorm(0,1)})
+  mc <- nimble::nimbleCode({a ~ dnorm(0,1)})
   res <- compareMCMCs::compareMCMCs(list(code = mc),
                                     MCMCs = c('jags', 'nimble'),
                                     MCMCcontrol = list(inits = list(a = 1),
@@ -15,7 +15,7 @@ test_that("compareMCMCs works with one sampled parameter", {
 )
 
 test_that("compareMCMCs works with two sampled parameters", {
-  mc <- nimbleCode(
+  mc <- nimble::nimbleCode(
   {
     for(i in 1:4) { ## These curly brackets are required for JAGS
       y[i] ~ dnorm(0,1)
@@ -23,14 +23,15 @@ test_that("compareMCMCs works with two sampled parameters", {
     }
   }
   )
-  res <- compareMCMCs::compareMCMCs(list(code = mc,
-                                         inits = list(y = rnorm(4))),
-                                    MCMCs = c('jags', 'nimble'),
-                                    MCMCcontrol = list(niter = 2000,
-                                                       thin = 2,
-                                                       burnin = 100),
-                                    metrics = c("ESS_coda", "efficiency_coda"),
-                                    metricOptions = list(efficiency_coda = list(time = "setup+sampling")))
+  res <- compareMCMCs::compareMCMCs(
+    list(code = mc,
+         inits = list(y = rnorm(4))),
+    MCMCs = c('jags', 'nimble'),
+    MCMCcontrol = list(niter = 2000,
+                       thin = 2,
+                       burnin = 100),
+    metrics = c("ESS_coda", "efficiency_coda"),
+    metricOptions = list(efficiency_coda = list(time = "setup+sampling")))
   expect_true(is.list(res))
   expect_identical(names(res), c("jags", "nimble"))
   expect_true(inherits(res[['nimble']], "MCMCresult"))
@@ -39,7 +40,7 @@ test_that("compareMCMCs works with two sampled parameters", {
 )
 
 test_that("compareMCMCs works with a matrix of sampled parameters", {
-  mc <- nimbleCode(
+  mc <- nimble::nimbleCode(
   {
     for(i in 1:2) { ## These brackets are required for JAGS
       for(j in 1:3) {
@@ -48,11 +49,12 @@ test_that("compareMCMCs works with a matrix of sampled parameters", {
     }
   }
   )
-  res <- compareMCMCs::compareMCMCs(list(code = mc,
-                                         inits = list(y = matrix(rnorm(6), nrow = 2))),
-                                    MCMCs = c('jags', 'nimble'),
-                                    MCMCcontrol = list(niter = 2000,
-                                                       burnin = 100))
+  res <- compareMCMCs::compareMCMCs(
+    list(code = mc,
+         inits = list(y = matrix(rnorm(6), nrow = 2))),
+    MCMCs = c('jags', 'nimble'),
+    MCMCcontrol = list(niter = 2000,
+                       burnin = 100))
   expect_true(is.list(res))
   expect_identical(names(res), c("jags", "nimble"))
   expect_true(inherits(res[['nimble']], "MCMCresult"))
@@ -96,14 +98,15 @@ test_that("compareMCMCs works with Stan", {
   #   cores = 1,              # number of cores (could use one per chain)
   #   refresh = 0             # no progress shown
   # )
-  res <- compareMCMCs::compareMCMCs(needRmodel = FALSE,
-                                    MCMCs = c('stan'),
-                                    externalMCMCinfo = list(stan = list(
-                                      file = "schools.stan",
-                                      sampling_args = list(data = schools_data,
-                                                           warmup = 1000, iter = 2000))))
+  res <- compareMCMCs::compareMCMCs(
+    needRmodel = FALSE,
+    MCMCs = c('stan'),
+    externalMCMCinfo = list(stan = list(
+      file = "schools.stan",
+      sampling_args = list(data = schools_data,
+                           warmup = 1000, iter = 2000))))
   # data, inits, warmup (burnin) and/or niter
   # can be provided in the externalMCMCinfo entry or via MCMCcontrol.
-  # For init and data, 
-  })
-
+  # For init and data,
+  file.remove("schools.stan")
+})

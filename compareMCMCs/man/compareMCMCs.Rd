@@ -16,20 +16,23 @@ compareMCMCs(
   conversions = list(),
   seed = NULL,
   needRmodel,
-  verbose = TRUE
+  verbose = TRUE,
+  sessionInfo = TRUE,
+  gc = TRUE
 )
 }
 \arguments{
 \item{modelInfo}{A list of nimble model-specification information,
 which may be relevant for JAGS, WinBUGS and/or OpenBUGS as
-well. To provide information for a different MCMC engine, see argument
-\code{externalMCMCinfo}.  Named elements in \code{modelInfo} can include \code{code} (model
-code as returned from \code{nimbleCode}), \code{data} (a list with data),
-\code{constants} (a list with data and/or constants), and \code{inits} (a
-list of initial values).  See \code{nimbleModel} in package nimble
-for for information on these arguments.  For JAGS, WinBUGS and
-OpenBUGS, many models can be run from the same
-specification since they use nearly the same model language.}
+well. To provide information for a different MCMC engine, see
+argument \code{externalMCMCinfo}.  Named elements in
+\code{modelInfo} can include \code{code} (model code as returned from
+\code{nimbleCode}), \code{data} (a list with data), \code{constants} (a list
+with data and/or constants), and \code{inits} (a list of initial
+values).  See \code{nimbleModel} in package nimble for for information
+on these arguments.  For JAGS, WinBUGS and OpenBUGS, many models
+can be run from the same specification since they use nearly the
+same model language.}
 
 \item{MCMCcontrol}{A list with fields \code{niter} (number of
 iterations), \code{thin} (thinning interval), and \code{burnin} (number
@@ -37,23 +40,27 @@ of iterations to discard from the beginning of the MCMC
 sample).}
 
 \item{MCMCs}{A character vector of MCMC cases to run.  This can
-include "nimble" (default nimble samplers), "jags", "stan",
-one of several nimble special cases
-(see details below), custom nimble
-sampler configurations provided via argument
+include "nimble" (default nimble samplers), "jags", "stan", one
+of several nimble special cases (see details below), custom
+nimble sampler configurations provided via argument
 \code{nimbleMCMCdefs}, and external MCMC engines registered via
-\code{\link{registerMCMCengine}}.  See \link{builtin_MCMCs} for information on
-"jags" and "stan".  Support for OpenBUGS and WinBUGS is pending.}
+\code{\link{registerMCMCengine}}.  See \link{builtin_MCMCs} for
+information on "jags" and "stan".  Support for OpenBUGS and
+WinBUGS is pending.}
 
-\item{monitors}{A vector of names of parameters to record in MCMC samples.}
+\item{monitors}{A character vector of variable names to monitor
+(record in MCMC output).  If missing, this will be determined
+from the nimble Rmodel as all top-level parameter names
+(e.g. hyper-parameters).}
 
-\item{nimbleMCMCdefs}{A list of information for custom sampler configurations in nimble.  See Details below.}
+\item{nimbleMCMCdefs}{A list of information for custom sampler
+configurations in nimble.  See Details below.}
 
-\item{externalMCMCinfo}{A list of arbitrary information for external MCMC engines,
-named by engine names.  If there is an external MCMC engine
-named "myMCMC", then a list element \code{myMCMC} of
-\code{externalMCMCinfo} will be passed to the engine as its \code{MCMCinfo}
-argument.}
+\item{externalMCMCinfo}{A list of arbitrary information for
+external MCMC engines, named by engine names.  If there is an
+external MCMC engine named "myMCMC", then a list element \code{myMCMC}
+of \code{externalMCMCinfo} will be passed to the engine as its
+\code{MCMCinfo} argument.}
 
 \item{metrics}{Either a character vector of registered metric names
 to apply to each sample, or a list of elements with either
@@ -61,10 +68,35 @@ metric names or metric functions to apply to each sample.  See
 \code{\link{addMetrics}} for more information.  A useful set of
 default metrics is provided.}
 
-\item{seed}{an (arbitrary) numeric value passed to \code{set.seed} to set the
-random-number generator seed before calling each MCMC engine.
-If NULL, no seed is set.  To obtain identical results from one call of \code{compareMCMCs}
-to the next, use identical \code{seed} values.}
+\item{metricOptions}{Optional named list of individual metric
+options passed as the third argument ("\code{options}") of
+\code{addMetrics} when MCMC metrics are calculated.}
+
+\item{conversions}{List of parameter conversion (transformation)
+specifications, useful when different MCMCs use different
+parameterizations.}
+
+\item{seed}{An (arbitrary) numeric value passed to \code{set.seed} to
+set the random-number generator seed before calling each MCMC
+engine.  If NULL, no seed is set.  To obtain identical results
+from one call of \code{compareMCMCs} to the next, use identical \code{seed}
+values.}
+
+\item{needRmodel}{If \code{TRUE}, a \code{nimble} model object called
+\code{Rmodel} should definitely be created and used for example to
+determine variable names.  If missing, \code{needRmodel} will be set
+\code{TRUE} if \code{MCMCs} includes "nimble", "jags", "openbugs", or
+"winbugs".}
+
+\item{verbose}{If \code{TRUE}, more verbose output may be generated.}
+
+\item{sessionInfo}{If \code{TRUE}, record the results of
+\code{sessionInfo()}, run before calling each MCMC, with each MCMC
+result.}
+
+\item{gc}{If \code{TRUE}, record the result of \code{gc()} (giving memory use
+information), run before calling each MCMC, with each MCMC
+result.}
 }
 \value{
 A list of \code{MCMCresult} objects.
@@ -84,5 +116,5 @@ Metropolis-Hastings (ARWMH) samplers in place of Gibbs
 \item "nimble_slice": use all slice samplers.
 }
 
-See package vignette for examples.
+See package vignette for more details and examples.
 }

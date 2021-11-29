@@ -47,7 +47,8 @@ test_that("conversion specifications work", {
   newSamples <- applyConversions(samples, conversions)
   expect_identical(newSamples, check2)
   
-  conversions <- list(z = quote(sqrt(`a[2]`)), `a[2]` = "", z2 = "z^2", z = NULL)
+  conversions <- list(z = quote(sqrt(`a[2]`)),
+                      `a[2]` = "", z2 = "z^2", z = NULL)
   newSamples <- applyConversions(samples, conversions)
   expect_identical(newSamples, check3)
 }

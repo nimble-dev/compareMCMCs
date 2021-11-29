@@ -22,7 +22,12 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+this_system_has_rjags <- requireNamespace(rjags)
+if(!this_system_has_rjags) message("Portions of this vignette use package rjags.  That is not installed, so those portions will be skipped.")
+this_system_has_rstan <- requireNamespace(rstan)
+if(!this_system_has_rstan) message("Portions of this vignette use package rstan.  That is not installed, so those portions will be skipped.")
 ```
+
 # Introduction
 
 `compareMCMCs` is a package for running, managing, and comparing results from different MCMC packages.  You can configure a set of MCMCs to run, have them automatically timed, and then generate html output with comparisons of efficiency and posterior distributions.  Throughout this document, we use "MCMC" as a short-hand for an MCMC kernel or the samples it generates.
@@ -62,7 +67,8 @@ configure_nimble_slice <- function(model) {
   configureMCMC(model, onlySlice = TRUE)
 }
 res <- compareMCMCs(modelInfo,
-                    MCMCs = c('jags', 'nimble', 'nimble_slice'),
+                    MCMCs = c(if(this_system_has_rjags) 'jags' else NULL,
+                              'nimble', 'nimble_slice'),
                     nimbleMCMCdefs = 
                       list(nimble_slice = 'configure_nimble_slice'),
                     MCMCcontrol = list(inits = list(a = 1),
@@ -115,7 +121,11 @@ Results are stored as a list of `MCMCresult` objects, so it is possible to simpl
 
 For example, the above example could be created as follows:
 
-```{r}
+```{r, eval=!this_system_has_rjags}
+message("Skipping this code because rjags is not installed.")
+```
+
+```{r, eval=this_system_has_rjags}
 res_jags <- compareMCMCs(modelInfo,
                 MCMCs = c('jags'),
                 MCMCcontrol = list(inits = list(a = 1),
@@ -207,7 +217,8 @@ conversions <- list(nimble = reparam,
                     nimble_slice = reparam,
                     jags = reparam)
 res <- compareMCMCs(modelInfo,
-                    MCMCs = c('jags', 'nimble', 'nimble_slice'),
+                    MCMCs = c(if(this_system_has_rjags) 'jags' else NULL,
+                              'nimble', 'nimble_slice'),
                     nimbleMCMCdefs = list(nimble_slice = 'configure_nimble_slice'),
                     conversions = conversions,
                     MCMCcontrol = list(inits = list(a = 1),
@@ -219,7 +230,7 @@ res <- compareMCMCs(modelInfo,
 combineMetrics(res)
 ```
 
-We can see that the parameter is now `log_a` rather than `a`. The use of backticks in "`log(\`a\`)`" ensures that `a` is evaluated as a variable and is described more below.
+We can see that the parameter is now `log_a` rather than `a`. The use of backticks in "``log(`a`)``" ensures that `a` is evaluated as a variable and is described more below.
 
 ## Converting parameters outside of `compareMCMCs`
 

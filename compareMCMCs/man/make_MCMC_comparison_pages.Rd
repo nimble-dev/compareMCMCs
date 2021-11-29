@@ -17,19 +17,22 @@ make_MCMC_comparison_pages(
 \item{comparisonResults}{An list of \code{MCMCresult} objects
 such as returned by \code{\link{compareMCMCs}}.}
 
-\item{dir}{A directory in which to place the html file and any figure files used in it.}
+\item{dir}{A directory in which to place the html file and any
+figure files used in it.}
 
-\item{pageComponents}{A list whose names are registered page components and values
-are \code{TRUE} (to include a component) or \code{FALSE} (to omit a component).  Components
-can also be omitted by leaving them out of the list.}
+\item{pageComponents}{A list whose names are registered page
+components and values are \code{TRUE} (to include a component) or
+\code{FALSE} (to omit a component).  Components can also be omitted by
+leaving them out of the list.}
 
-\item{modelName}{A name to be used for the model in generated output.}
+\item{modelName}{A name to be used for the model in generated
+output.}
 
 \item{control}{A named list of control parameters.}
 
-\item{plot}{\code{TRUE} to generate results, \code{FALSE} not to do so.  Use of \code{FALSE} is
-useful if one wants to use the returned object (including plottable components)
-in one's own way.}
+\item{plot}{\code{TRUE} to generate results, \code{FALSE} not to do so.  Use
+of \code{FALSE} is useful if one wants to use the returned object
+(including plottable components) in one's own way.}
 }
 \value{
 A list of objects returned from each page component plugin.  For figures,
@@ -40,8 +43,10 @@ these contain information for text output such as an \code{xtable} object.
 Create html output with comparisons of MCMC results
 }
 \details{
-See package vignette for information about page components, including about default
-page components and how to write and register new page components.
+See package vignette for information about page components,
+including about default page components and how to write and
+register new page components.
 
-To see built-in page components and their options, use \code{as.list(getPageComponents())}.
+To see built-in page components and their options, use
+\code{as.list(getPageComponents())}.
 }

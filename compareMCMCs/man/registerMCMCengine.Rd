@@ -20,7 +20,7 @@ See package vignette for information about the arguments
 that will be passed to \code{fun} from \code{compareMCMCs} and the \code{MCMCresult}
 object that should be returned by \code{fun}.
 
-For an example, see \code{compareMCMCs:::MCMCdef_jags}.
+For more information, see \link{builtin_MCMCs}.
 
 MCMCs from \code{nimble} are run in a different way, since there can be
 multiple MCMCs for the same \code{nimble} model.  These are run by

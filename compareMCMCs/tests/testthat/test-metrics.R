@@ -23,18 +23,23 @@ test_that("various metrics and comparison pages work", {
   expect_identical(names(test1), "byParameter")
   expect_identical(names(test1[[1]]), "mean")
   
-  expect_identical(names(results$zippy$metrics$byParameter), c("MCMC", "Parameter"))
+  expect_identical(names(results$zippy$metrics$byParameter),
+                   c("MCMC", "Parameter"))
   addMetrics(results,
              MCMCmetric_mean)
-  expect_identical(names(results$zippy$metrics$byParameter), c("MCMC", "Parameter", "mean"))
+  expect_identical(names(results$zippy$metrics$byParameter),
+                   c("MCMC", "Parameter", "mean"))
   
   addMetrics(results,
              MCMCmetric_median)
-  expect_identical(names(results$zippy$metrics$byParameter), c("MCMC", "Parameter", "mean", "median"))
+  expect_identical(names(results$zippy$metrics$byParameter),
+                   c("MCMC", "Parameter", "mean", "median"))
   
   addMetrics(results,
              MCMCmetric_CI95)
-  expect_identical(names(results$zippy$metrics$byParameter), c("MCMC", "Parameter", "mean", "median", "CI95_low", "CI95_upp"))
+  expect_identical(names(results$zippy$metrics$byParameter),
+                   c("MCMC", "Parameter", "mean", "median",
+                     "CI95_low", "CI95_upp"))
   
   ## with two variables
   results <- list(
@@ -57,36 +62,50 @@ test_that("various metrics and comparison pages work", {
   expect_identical(names(test1), "byParameter")
   expect_identical(names(test1[[1]]), "mean")
   
-  expect_identical(names(results$zippy$metrics$byParameter), c("MCMC", "Parameter"))
+  expect_identical(names(results$zippy$metrics$byParameter),
+                   c("MCMC", "Parameter"))
   addMetrics(results,
              MCMCmetric_mean)
-  expect_identical(names(results$zippy$metrics$byParameter), c("MCMC", "Parameter", "mean"))
+  expect_identical(names(results$zippy$metrics$byParameter),
+                   c("MCMC", "Parameter", "mean"))
   
   addMetrics(results,
              MCMCmetric_median)
-  expect_identical(names(results$zippy$metrics$byParameter), c("MCMC", "Parameter", "mean", "median"))
+  expect_identical(names(results$zippy$metrics$byParameter),
+                   c("MCMC", "Parameter", "mean", "median"))
   
   addMetrics(results,
              MCMCmetric_CI95)
-  expect_identical(names(results$zippy$metrics$byParameter), c("MCMC", "Parameter", "mean", "median", "CI95_low", "CI95_upp"))
+  expect_identical(names(results$zippy$metrics$byParameter),
+                   c("MCMC", "Parameter", "mean", "median",
+                     "CI95_low", "CI95_upp"))
   
   test2 <- MCMCmetric_efficiency(results$zippy)
   expect_identical(names(test2$byMCMC), c("min_efficiency", "mean_efficiency"))
   addMetrics(results,
              MCMCmetric_efficiency)
-  expect_identical(names(results$zippy$metrics$byParameter), c("MCMC", "Parameter", "mean", "median", "CI95_low", "CI95_upp", "ESS", "efficiency"))
-  expect_identical(names(results$zippy$metrics$byMCMC), c("MCMC", "min_efficiency", "mean_efficiency"))
+  expect_identical(names(results$zippy$metrics$byParameter),
+                   c("MCMC", "Parameter", "mean", "median",
+                     "CI95_low", "CI95_upp", "ESS", "efficiency"))
+  expect_identical(names(results$zippy$metrics$byMCMC),
+                   c("MCMC", "min_efficiency", "mean_efficiency"))
   
   combo <- combineMetrics(results)
-  expect_identical(names(combo$byParameter), c("MCMC", "Parameter", "mean", "median", "CI95_low", "CI95_upp", "ESS", "efficiency"))
-  expect_identical(names(combo$byMCMC), c("MCMC", "min_efficiency", "mean_efficiency"))
+  expect_identical(names(combo$byParameter),
+                   c("MCMC", "Parameter", "mean", "median",
+                     "CI95_low", "CI95_upp", "ESS", "efficiency"))
+  expect_identical(names(combo$byMCMC), c("MCMC",
+                                          "min_efficiency",
+                                          "mean_efficiency"))
   
   junk <- compareMCMCs:::posteriorSummaryComparisonComponent(combo)
   expect_true(inherits(junk$plottable, "ggplot"))
-  # burnin and post-burnin times are absent and this also 
-  # tests that those are correctly handled as NAs, leaving empty cells in the output table.
+  # burnin and post-burnin times are absent and this also tests that
+  # those are correctly handled as NAs, leaving empty cells in the
+  # output table.
   make_MCMC_comparison_pages(results,
-                             pageComponents = list(timing = TRUE, posteriorSummary = TRUE),
+                             pageComponents = list(
+                               timing = TRUE, posteriorSummary = TRUE),
                              modelName = 'test model')
   expect_true("test model.html" %in% list.files())
   expect_true("test model_posteriorSummary.jpg" %in% list.files()) 
@@ -98,8 +117,7 @@ test_that("various metrics and comparison pages work", {
                              pageComponents = list(efficiencySummary = TRUE),
                              modelName = 'test model2')
   expect_true("test model2.html" %in% list.files())
-  expect_true("test model2_efficiencySummary.jpg" %in% list.files()) ## and others, not checked
-  
+  expect_true("test model2_efficiencySummary.jpg" %in% list.files()) 
   
   make_MCMC_comparison_pages(results,
                              pageComponents = list(efficiencySummary = TRUE,
@@ -107,7 +125,7 @@ test_that("various metrics and comparison pages work", {
                              modelName = 'test model3')
   expect_true("test model3.html" %in% list.files())
   expect_true("test model3_posteriorSummary.jpg" %in% list.files()) 
-  expect_true("test model3_efficiencySummary.jpg" %in% list.files()) ## and others, not checked
+  expect_true("test model3_efficiencySummary.jpg" %in% list.files()) 
   
   junk <- compareMCMCs:::allParamEfficiencyComparisonComponent(combo)
   expect_true(inherits(junk$plottable, "ggplot"))
@@ -125,6 +143,6 @@ test_that("various metrics and comparison pages work", {
   expect_true("test model4_posteriorSummary.jpg" %in% list.files()) 
   expect_true("test model4_efficiencySummaryAll.jpg" %in% list.files()) 
   expect_true("test model4_efficiencyDetails.jpg" %in% list.files()) 
-  expect_true("test model4_paceSummaryAll.jpg" %in% list.files()) ## and others, not checked
+  expect_true("test model4_paceSummaryAll.jpg" %in% list.files())
 }
 )
