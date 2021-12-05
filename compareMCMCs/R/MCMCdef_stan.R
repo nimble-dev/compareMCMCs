@@ -107,6 +107,10 @@ MCMCdef_stan_impl <- function(MCMCinfo,
                                  # pars = monitorInfo$monitorVars,
                                  permuted = FALSE,
                                  inc_warmup = FALSE)[, 1, ]
+
+  ## Remove 'lp__' variable from Stan samples array
+  lpColumn <- which(colnames(samplesArray) == 'lp__')
+  samplesArray <- samplesArray[, -lpColumn]
   
   ## Stan provides its own timings, but there is a need
   ## to have them be comparable to those for other MCMCs.
