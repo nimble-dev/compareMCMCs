@@ -59,7 +59,7 @@ MCMCdef_stan_impl <- function(MCMCinfo,
   if((is.null(fileStan) | isTRUE(fileStan == '')) & 
      is.null(stan_model_args$file) & 
      is.null(stan_model_args$model_code))
-    stop(paste('You must provide model information to run Stan MCMC either via', #lacks test coverage
+    stop(paste('You must provide model information to run Stan MCMC either via',
                 '(i) a \'file\' element in the externalMCMCinfo list for \'stan\' ',
                 'or (ii) a \'file\' or (iii) a \'model_code\' element in the',
                 'stan_model_args (list) element in the externalMCMCinfo for',
