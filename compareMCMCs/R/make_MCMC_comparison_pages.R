@@ -14,6 +14,7 @@ compareMCMCs_registered_pageComponents <- new.env()
 #'   argument to \code{make_MCMC_comparison_pages}. See package
 #'   vignette for explanation page components.
 #'
+#' @importFrom stats sd
 #' @seealso \link{make_MCMC_comparison_pages}
 NULL
 

@@ -64,7 +64,7 @@ can alternatively be provided via \code{sampling_args$data}.
 This can alternatively be provided via \code{sampling_args$inits}.
 \item \code{stan_model_args}: list of arguments to \code{stan_model}.  Note that this
 can provide the stan model in the \code{model_code} element (as a character string)
-or in the \code{file} element (an alternative way to provide the file name.)
+or in the \code{file} element (an alternative way to provide the file name).
 \item \code{sampling_args}: list of arguments to \code{sampling}.
 }
 
