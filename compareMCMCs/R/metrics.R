@@ -141,10 +141,10 @@ MCMCmetric_efficiency <- function(result, options = NULL) {
   }
   ESS_needed <- TRUE
   ESSsuff <- paste0("ESS", options$suffix)
-  if(ESSsuff %in% colnames(result$byParameter)) {
+  if(ESSsuff %in% colnames(result$metrics$byParameter)) {
     # already calculated
-    ess <- result$byParameter[, ESSsuff]
-    names(ess) <- as.character(result$byParameter$Parameter)
+    ess <- result$metrics$byParameter[, ESSsuff]
+    names(ess) <- as.character(result$metrics$byParameter$Parameter)
     ESS_needed <- FALSE
   } else {
     ESSmetric <- MCMCmetric_ESS(result, options = options)

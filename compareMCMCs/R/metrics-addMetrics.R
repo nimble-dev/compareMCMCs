@@ -43,7 +43,7 @@ clearMetrics <- function(results,
                          byParameter = TRUE,
                          byMCMC = TRUE) {
   if(!is.list(results))
-    results <- list(results)
+    results <- list(results) #lacks test coverage
   for(iR in seq_along(results)) {
   results[[iR]]$clearMetrics(byParameter = byParameter,
                              byMCMC = byMCMC)
@@ -63,7 +63,7 @@ addMetrics <- function(results,
                                    'efficiency'),
                        options = list()) {
   if(!is.list(results))
-    results <- list(results)
+    results <- list(results) #lacks test coverage
   if(is.character(metrics))
     metrics <- as.list(metrics)
   if(!is.list(metrics))
@@ -73,7 +73,7 @@ addMetrics <- function(results,
       thisMetricName <- metrics[[iM]]
       thisMetric <- compareMCMCs_registered_metrics[[ thisMetricName ]]
       if(is.null(thisMetric))
-        warning(
+        warning( #lacks test coverage
           paste0('No metric ',
                  'named \"',
                  thisMetricName,
@@ -86,14 +86,13 @@ addMetrics <- function(results,
       metric <- try(thisMetric(results[[iR]],
                     options[[thisMetricName]]))
       if(inherits(metric, "try-error")) {
-        warning(paste0("Problem applying metric ",
+        warning(paste0("Problem applying metric ", #lacks test coverage
                        thisMetricName,
                        " to result #", iR, " (", names(results)[iR], ")"))
-        
       }
       add_ok <- results[[iR]]$addMetricResult(metric)
       if(inherits(add_ok, 'try-error')) {
-        warning(paste0("The result from metric ",
+        warning(paste0("The result from metric ", #lacks test coverage
                        thisMetricName,
                        " for result #", iR, " (", names(results)[iR], ")",
                        "has a problem."))

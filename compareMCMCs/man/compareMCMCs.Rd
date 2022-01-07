@@ -17,22 +17,27 @@ compareMCMCs(
   seed = NULL,
   needRmodel,
   verbose = TRUE,
-  sessionInfo = TRUE,
-  gc = TRUE
+  sessionInfo = TRUE
 )
 }
 \arguments{
-\item{modelInfo}{A list of nimble model-specification information,
-which may be relevant for JAGS, WinBUGS and/or OpenBUGS as
-well. To provide information for a different MCMC engine, see
+\item{modelInfo}{A list of nimble model-specification information
+(which may be relevant for JAGS, WinBUGS and/or OpenBUGS as
+well) and/or a nimble model itself. To provide information
+for a different MCMC engine, see
 argument \code{externalMCMCinfo}.  Named elements in
 \code{modelInfo} can include \code{code} (model code as returned from
 \code{nimbleCode}), \code{data} (a list with data), \code{constants} (a list
-with data and/or constants), and \code{inits} (a list of initial
-values).  See \code{nimbleModel} in package nimble for for information
+with data and/or constants), \code{inits} (a list of initial
+values), and/or \code{model} (an object returned from \code{nimbleModel}).
+If \code{model} is not provided, and if an R model will be needed, then
+\code{nimbleModel} will be called to create one using \code{code}, \code{data}, and/or \code{inits}.
+See \code{nimbleModel} in package nimble for for information
 on these arguments.  For JAGS, WinBUGS and OpenBUGS, many models
 can be run from the same specification since they use nearly the
-same model language.}
+same model language.  If \code{model} is provided, the other elements
+will not be needed if only nimble MCMCs are used but will be needed if JAGS,
+WinBUGS or OpenBUGS will be used..}
 
 \item{MCMCcontrol}{A list with fields \code{niter} (number of
 iterations), \code{thin} (thinning interval), and \code{burnin} (number
@@ -50,11 +55,11 @@ WinBUGS is pending.}
 
 \item{monitors}{A character vector of variable names to monitor
 (record in MCMC output).  If missing, this will be determined
-from the nimble Rmodel as all top-level parameter names
+from the nimble model as all top-level parameter names
 (e.g. hyper-parameters).}
 
 \item{nimbleMCMCdefs}{A list of information for custom sampler
-configurations in nimble.  See Details below.}
+configurations in nimble.  See package vignette for details.}
 
 \item{externalMCMCinfo}{A list of arbitrary information for
 external MCMC engines, named by engine names.  If there is an
@@ -82,9 +87,10 @@ engine.  If NULL, no seed is set.  To obtain identical results
 from one call of \code{compareMCMCs} to the next, use identical \code{seed}
 values.}
 
-\item{needRmodel}{If \code{TRUE}, a \code{nimble} model object called
-\code{Rmodel} should definitely be created and used for example to
-determine variable names.  If missing, \code{needRmodel} will be set
+\item{needRmodel}{If \code{TRUE}, a \code{nimble} model object should definitely be created
+(if necessary, or obtained from \code{modelInfo$model} if provided) and
+used, for example to determine variable names.  If missing, \code{needRmodel}
+will be set
 \code{TRUE} if \code{MCMCs} includes "nimble", "jags", "openbugs", or
 "winbugs".}
 
@@ -92,10 +98,6 @@ determine variable names.  If missing, \code{needRmodel} will be set
 
 \item{sessionInfo}{If \code{TRUE}, record the results of
 \code{sessionInfo()}, run before calling each MCMC, with each MCMC
-result.}
-
-\item{gc}{If \code{TRUE}, record the result of \code{gc()} (giving memory use
-information), run before calling each MCMC, with each MCMC
 result.}
 }
 \value{

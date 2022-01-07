@@ -328,11 +328,11 @@ minMeanComparisonComponent <- function(comparisonResults,
                                              fill = "MCMC",
                                              color = "MCMC")) +
       ggplot2::geom_point(stat='identity')+
-      ggplot2::stat_summary(fun.y = 'mean',
-                            fun.ymin = function(x) x,
-                            fun.ymax = function(x) x,
+      ggplot2::stat_summary(fun = 'mean',
+                            fun.min = function(x) mean(x) - sd(x),
+                            fun.max = function(x) mean(x) + sd(x),
                             shape = '-',
-                            size = 4) +
+                            size = 1) +
       ggplot2::ggtitle(title)+
       ggplot2::facet_wrap(~ type,ncol=2,scales='free') +
       ggplot2::ylab(ylabel) +
@@ -385,9 +385,9 @@ allParamEfficiencyComparisonComponent <- function(comparisonResults,
 
   if(replicatedRuns) {
       vars <- stats::aggregate(vars[[efficiency_name]],
-                               list(vars$method, vars$var),
+                               list(vars$MCMC, vars$Parameter),
                                mean)
-    colnames(vars) <- c('MCMC', 'Parameter', "Efficiency")
+    colnames(vars) <- c('MCMC', 'Parameter', efficiency_name)
     title <- paste("Mean", title)
   }
 
@@ -401,17 +401,7 @@ allParamEfficiencyComparisonComponent <- function(comparisonResults,
       ggplot2::ylab(ylabel) +
       ggplot2::guides(colour = ggplot2::guide_legend(title = "Parameter")) +
       ggplot2::ggtitle(title)
-  if(replicatedRuns)
-      p <- p +
-        ggplot2::stat_summary(
-          mapping = ggplot2::aes(x = "MCMC", y = efficiency_name),
-          data = vars,
-          inherit.aes = FALSE,
-          fun.y = 'mean',
-          fun.ymin = function(x) x,
-          fun.ymax = function(x) x,
-          shape = '-',
-          size = 2)
+
   list(plottable = p,
        height = 6,
        width = 5,
@@ -449,11 +439,11 @@ efficiencyDetailsComparisonComponent <- function(comparisonResults,
                                              y = efficiency_name,
                                              fill = "MCMC", color = "MCMC")) +
       ggplot2::geom_point(stat='identity') +
-      ggplot2::stat_summary(fun.y = 'mean',
-                            fun.ymin = function(x) x,
-                            fun.ymax = function(x) x,
+      ggplot2::stat_summary(fun = 'mean',
+                            fun.min = function(x) mean(x) - sd(x),
+                            fun.max = function(x) mean(x) + sd(x),
                             shape = '-',
-                            size = 4) +
+                            size = 1) +
       ggplot2::ggtitle(
         paste0("MCMC efficiency details\n",
                "(Effective sample size per second for each parameter)\n",

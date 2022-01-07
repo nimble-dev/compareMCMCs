@@ -11,7 +11,10 @@ applyConversions(samples, conversions)
 list of \code{MCMCresult} objects (such as returned by
 \code{\link{compareMCMCs}}); a matrix of MCMC samples (such as
 the \code{samples} element of an \code{MCMCresult} object); or a named
-list of such matrices.}
+list of such matrices.  In the first two cases, conversions will
+be done in place (as a "side effect" modifying the arguments)
+because \code{\link{MCMCresult}} objects are R6 objects and are thus
+passed by reference.}
 
 \item{conversions}{One of: a list of conversion specifications (see
 below); a named list of conversion specifications, with names
@@ -45,5 +48,7 @@ sensible order.
 If both \code{conversions} and \code{samples} are named lists, they will be
 matched: the \code{conversions} element (itself a list of conversion
 specifications) used on a \code{samples} element will have the same
-name.
+name.  If there is no \code{conversions} element for a given \code{samples}
+element, that \code{samples} element will be included in the returned
+list without any conversions.
 }

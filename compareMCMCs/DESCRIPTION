@@ -23,10 +23,14 @@ Imports:
     xtable,
     coda
 Suggests: 
+    testthat (>= 3.0.0),
     knitr,
-    rmarkdown
+    rmarkdown,
+    rjags,
+    rstan
 URL: https://github.com/nimble-dev/compareMCMCs
 BugReports: https://github.com/nimble-dev/compareMCMCs/issues
 VignetteBuilder: knitr
 RoxygenNote: 7.1.2
 Roxygen: list(markdown = TRUE)
+Config/testthat/edition: 3

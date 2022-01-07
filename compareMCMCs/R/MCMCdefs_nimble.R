@@ -1,3 +1,4 @@
+#' @importFrom nimble configureMCMC
 MCMCdefs_nimble_builtin <-
   list(
     nimble        = quote(nimble::configureMCMC(model)),

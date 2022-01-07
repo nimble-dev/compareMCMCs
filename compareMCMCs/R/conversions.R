@@ -14,7 +14,10 @@
 #'     list of `MCMCresult` objects (such as returned by
 #'     \code{\link{compareMCMCs}}); a matrix of MCMC samples (such as
 #'     the `samples` element of an `MCMCresult` object); or a named
-#'     list of such matrices.
+#'     list of such matrices.  In the first two cases, conversions will 
+#'     be done in place (as a "side effect" modifying the arguments) 
+#'     because \code{\link{MCMCresult}} objects are R6 objects and are thus
+#'     passed by reference.
 #'  
 #' @param conversions One of: a list of conversion specifications (see
 #'     below); a named list of conversion specifications, with names
@@ -40,7 +43,9 @@
 #'  If both `conversions` and `samples` are named lists, they will be
 #'  matched: the `conversions` element (itself a list of conversion
 #'  specifications) used on a `samples` element will have the same
-#'  name.
+#'  name.  If there is no `conversions` element for a given `samples`
+#'  element, that `samples` element will be included in the returned
+#'  list without any conversions.
 #'  
 #' @return An object of the same type as `samples` after application
 #'     of conversions.
@@ -49,27 +54,30 @@
 applyConversions <- function(samples,
                              conversions) {
   if(is.list(samples)) {
-    sampleNames <- names(conversions)
+    convertedSamples <- list()
+    sampleNames <- names(samples)
     for(sN in sampleNames) {
       if(!is.null(conversions[[sN]]))
-        applyConversions(samples[[sN]], conversions[[sN]])
+        convertedSamples[[sN]] <- applyConversions(samples[[sN]], conversions[[sN]])
+      else
+        convertedSamples[[sN]] <- samples[[sN]]
     }
-    return(invisible(NULL))
+    return(convertedSamples)
   }
   if(inherits(samples, "MCMCresult")) {
     samples$samples <- applyConversions(samples$samples, conversions)
-    return(invisible(NULL))
+    return(samples)
   }
-  if(!length(conversions)) return(invisible(NULL))
+  if(!length(conversions)) return(invisible(NULL)) #lacks test coverage
   if(!is.list(conversions))
-    stop("conversions must be a list.")
+    stop("conversions must be a list.") #lacks test coverage
   conversionNames <- names(conversions)
   if(is.null(conversionNames))
-    stop("conversions list must have names")
+    stop("conversions list must have names") #lacks test coverage
   if(!is.data.frame(samples))
     workSamples <- as.data.frame(samples)
   else
-    workSamples <- samples
+    workSamples <- samples #lacks test coverage
 
   for(i in seq_along(conversions)) {
     new_column_name <- conversionNames[i]
@@ -95,13 +103,13 @@ applyConversions <- function(samples,
       if(is.function(conversions[[i]])) {
         new_column <- try(conversions[[i]](samples))
       } else {
-        warning(paste0("conversion entry for ",
+        warning(paste0("conversion entry for ", #lacks test coverage
                        new_column_name,
                        " is not valid.\n"))
       }
     }
     if(inherits(new_column, 'try-error')) {
-      warning(paste0("There was a problem creating conversion ",
+      warning(paste0("There was a problem creating conversion ", #lacks test coverage
                      new_column_name, ".\n"))
     } else {
       ok <- try(workSamples[[new_column_name]] <- new_column)

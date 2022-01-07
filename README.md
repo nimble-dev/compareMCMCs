@@ -6,20 +6,22 @@ The User Manual (aka package vignette) giving an overview of compareMCMCs can be
 
 Right now, compareMCMCs works with NIMBLE, JAGS and Stan.  It has a plug-in system to make it easy to include other MCMC engines in comparisons.
 
-compareMCMCs allows you to configure a set of MCMCs to run and then automatically time them and process their results to generate html output with comparisons of efficiency and posterior distributions. This system started life as part of the nimble package. Although it is now a separate package, it remains somewhat nimble-centric.
+compareMCMCs allows you to configure a set of MCMCs to run and then automatically time them and process their results to generate html output with comparisons of efficiency and posterior distributions. This system started life as part of the `nimble` package.  It can make use of nimble's MCMC configuration system, or it can be used independently of nimble.
 
-Use of other MCMCs is supported by a plugin system.  Plugins are provided for JAGS and Stan.  Since nimble, JAGS, WinBUGS and OpenBUGS use different dialects of the same model language, it is sometimes possible to compare them using the same model code.
+Use of other MCMCs is supported by a plugin system.  Plugins are provided for JAGS and Stan.  Since nimble and JAGS (as well as WinBUGS and OpenBUGS) use different dialects of the same model language, it is sometimes possible to compare them using the same model code.
 
 It is also possible to provide new comparison metrics and/or new figure components for html comparison pages.
 
 In summary, compareMCMCs provides:
 
-- the `doMCMCs` function to run one or more MCMCs and manage the results;
+- the `compareMCMCs` function to run one or more MCMCs and manage the results;
 - the `MCMCresult` class to manage results by storing samples, timing information, metrics or summaries of performance, and other details;
 - a plugin systems to include new MCMC engines;
 - a plugin system for new metrics for comparison among MCMCs;
 - a system for generating html pages with figures from comparison metrics, including a plugin system to provide new page components;
 - partial backward compatibility to nimble's original `MCMCsuite` and `compareMCMCs` functions.
+
+## Installation
 
 To install compareMCMCs from github (it is not currently on CRAN):
 ```r
@@ -28,8 +30,27 @@ install_github("nimble-dev/compareMCMCs", subdir = "compareMCMCs")
 ```
 Or, of course, you can download and build the package, which is in directory compareMCMCs.
 
-To use `compareMCMCs` plugin for JAGS you first need to install JAGS. See [JAGS homepage](http://mcmc-jags.sourceforge.net/) for platform based instructions. The plugin also need the `rjags` package:
+To use the `compareMCMCs` plugin for JAGS you first need to install JAGS. See [JAGS homepage](http://mcmc-jags.sourceforge.net/) for platform based instructions. You will also need the `rjags` package:
 
 ```
 install.packages("rjags")
 ```
+
+To use the `compareMCMCs` plugin for stan, you first need to install the `rstan` package:
+```
+install.packages("rstan")
+```
+
+## Contributing and requesting support
+
+We welcome contributions to `compareMCMCs`.   Of particular interest are contributions for the various plug-in features, including:
+
+- plug-ins for different MCMC engines,
+- plug-ins for different comparison metrics, and
+- plug-ins for different comparison page components.
+
+We also welcome support requests, bug fixes and documentation suggestions.
+
+To request support or report a bug, please be signed in to a GitHub account and submit an issue [here](https://github.com/nimble-dev/compareMCMCs/issues).
+
+To contribute code, please make a GitHub pull request.  If it is very short or you want to start discussion about the idea before implementing it, you can do so by submitting an issue.

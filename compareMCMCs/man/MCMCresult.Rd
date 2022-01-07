@@ -61,9 +61,6 @@ Elements of \code{metrics} are normally populated by \code{addMetrics} or
 \code{compareMCMCs}
 (which calls \code{addMetrics}).}
 
-\item{\code{gc}}{Result of running \code{gc()} prior to calling an MCMC engine,
-if requested.}
-
 \item{\code{sessionInfo}}{Result of running \code{sessionInfo()} prior to calling
 an MCMC engine, if requested.}
 }

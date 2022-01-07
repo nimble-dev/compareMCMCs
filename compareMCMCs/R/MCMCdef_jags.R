@@ -1,4 +1,5 @@
 #' @rdname builtin_MCMCs
+#' @importFrom stats update
 #' @export
 MCMCdef_jags <- function(MCMCinfo, 
                          MCMCcontrol, 

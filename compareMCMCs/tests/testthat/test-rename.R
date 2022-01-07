@@ -1,6 +1,4 @@
-context("Testing dummy MCMCdef")
-
-test_that("compareMCMCs works", {
+test_that("renameMCMC works", {
   res1 <- compareMCMCs::compareMCMCs(needRmodel = FALSE,
                                      MCMCs = c('dummy'),
                                      monitors = c("param1", "param2"),
@@ -14,10 +12,10 @@ test_that("compareMCMCs works", {
   compareMCMCs:::renameMCMC(res2$dummy, "dummy2")
   
   expect_true(is.list(res2))
-  expect_identical(names(res2), c("dummy"))
+  expect_identical(names(res2), c("dummy")) # list element is still dummy
   expect_true(inherits(res2[['dummy']], "MCMCresult"))
   expect_true(inherits(res2$dummy$metrics$byParameter, "data.frame"))
-  expect_true(
+  expect_true( # elements in MCMCresult are renamed
     identical(as.character(unique(res2$dummy$metrics$byParameter$MCMC)),
               "dummy2"))
   
@@ -28,7 +26,7 @@ test_that("compareMCMCs works", {
                                      monitors = c("param1", "param2"),
                                      MCMCcontrol = list(niter = 2000,
                                                         burnin = 100))
-
+  expect_error(res3 <- compareMCMCs:::renameMCMC(res3, "dummy3")) # must provide oldName if first arg is a list
   res3 <- compareMCMCs:::renameMCMC(res3, "dummy3", "dummy")
   expect_identical(names(res3), c("dummy3"))
   expect_true(
@@ -41,5 +39,8 @@ test_that("compareMCMCs works", {
   expect_true(
     identical(as.character(unique(combo2b$dummy3b$metrics$byParameter$MCMC)),
               "dummy3b"))
+  
+  combo3 <- c(res1, list(nonsense = 'nonsense')) # put invalid (not MCMCresult) element in list
+  expect_warning(compareMCMCs:::renameMCMC(combo3, "dummy3", "dummy"))
   }
 )

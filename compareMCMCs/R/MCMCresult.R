@@ -3,7 +3,8 @@
 #' @seealso \code{\link{renameMCMC}} to change the name of an MCMC
 #'     method throughout the structure of a list of `MCMCresult`
 #'     objects.
-#' 
+#'
+#' @importFrom R6 R6Class
 #' @export
 MCMCresult <- R6::R6Class(
   classname = "MCMCresult",
@@ -126,11 +127,11 @@ MCMCresult <- R6::R6Class(
       if(is.null(self$metrics$byParameter) | is.null(self$metrics$byMCMC)) {
         if(length(self$MCMC)==0) {
           if(!silent)
-            warning("Trying to initializeMetrics with no MCMC name set.\n")
+            warning("Trying to initializeMetrics with no MCMC name set.\n") #lacks test coverage
           return(FALSE)
         }
         if(is.null(self$samples)) {
-          if(!silent)
+          if(!silent) #lacks test coverage
             warning("Trying to initializeMetrics with no samples set.\n")
           return(FALSE)
         }
@@ -178,7 +179,7 @@ MCMCresult <- R6::R6Class(
    #' elements of `metrics`.
     addMetricResult = function(metricResult) {
       if(!self$initializeMetrics()) {
-        stop(
+        stop( #lacks test coverage
           paste0("Can't add metric results until metrics can be initialized.",
                  " This requires samples and a MCMC name."))
       }
@@ -186,7 +187,7 @@ MCMCresult <- R6::R6Class(
       ## byParameter, and/or other
       validNames <- names(metricResult) %in% c("byMCMC", "byParameter", "other")
       if(!all(validNames)) {
-          iInvalidNames <- which(!validNames)
+          iInvalidNames <- which(!validNames) #lacks test coverage
           warning(paste0('metric input with names ',
                          paste(names(metricResult)[iInvalidNames],
                                collapse = ', '), ' will be ignored.'))
@@ -218,7 +219,7 @@ MCMCresult <- R6::R6Class(
         }
       }
       if(!is.null(metricResult$other)) {
-        if(!is.list(metricResult$other))
+        if(!is.list(metricResult$other)) #lacks test coverage
           stop('metricResult must be a list if provided with other=TRUE.')
         self$metrics$other <- c(self$metrics$other, metricResult)
       }

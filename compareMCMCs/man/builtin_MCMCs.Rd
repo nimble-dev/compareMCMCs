@@ -62,7 +62,9 @@ This can alternatively be provided via \code{stan_model_args$file}.
 can alternatively be provided via \code{sampling_args$data}.
 \item \code{inits}: \code{inits} argument to \code{sampling} function in \code{rstan}.
 This can alternatively be provided via \code{sampling_args$inits}.
-\item \code{stan_model_args}: list of arguments to \code{stan_model}.
+\item \code{stan_model_args}: list of arguments to \code{stan_model}.  Note that this
+can provide the stan model in the \code{model_code} element (as a character string)
+or in the \code{file} element (an alternative way to provide the file name.)
 \item \code{sampling_args}: list of arguments to \code{sampling}.
 }
 
