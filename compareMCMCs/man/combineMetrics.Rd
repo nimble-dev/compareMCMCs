@@ -8,11 +8,21 @@ combineMetrics(results, include_times = FALSE)
 }
 \arguments{
 \item{results}{a list of \code{MCMCresult} objects}
+
+\item{include_times}{if \code{TRUE}, attempt to include timing elements
+in the combination.}
 }
 \value{
-A list with elements \code{byParameter} and \code{byMCMC}.  Each element combines
-the corresponding elements for each \code{MCMCresult} object in the \code{results} argument.
+A list with elements \code{byParameter} and \code{byMCMC}.  Each
+element combines the corresponding elements for each \code{MCMCresult}
+object in the \code{results} argument.
+
+if \code{include_times} is \code{TRUE}, an element \code{times} will also be in
+the returned list.
 }
 \description{
 This is useful for seeing results from multiple MCMC engines compactly.
+}
+\seealso{
+\link{modifyMetrics}
 }

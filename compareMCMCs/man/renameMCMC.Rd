@@ -7,22 +7,27 @@
 renameMCMC(MCMCresult, newName, oldName)
 }
 \arguments{
-\item{MCMCresult}{One or a named list of \code{MCMCresult} objects, such as returned by
-\code{\link{compareMCMCs}}.}
+\item{MCMCresult}{One or a named list of \code{MCMCresult} objects, such
+as returned by \code{\link{compareMCMCs}}.}
 
-\item{newName}{A new (replacement) name for one of the MCMC method names}
+\item{newName}{A new (replacement) name for one of the MCMC method
+names}
 
-\item{oldName}{An old (existing) name for one of the MCMC method names}
+\item{oldName}{An old (existing) name for one of the MCMC method
+names}
 }
 \description{
-This is useful because an MCMC method name appears in multiple places
+This is useful because an MCMC method name appears in multiple
+places
 }
 \details{
-This replaces the MCMC label \code{oldName} with \code{newName} anywhere they appear in
-the \code{MCMCresult} list.  This includes various places in the \code{metrics} elements of
-the \code{MCMCresult} objects.
+This replaces the MCMC label \code{oldName} with \code{newName}
+anywhere they appear in the \code{MCMCresult} list.  This includes
+various places in the \code{metrics} elements of the \code{MCMCresult}
+objects.
 
-If \code{oldName} is omitted, \code{MCMCresult} must be a single \code{MCMCresult} object, in which
-the existing MCMC method name will be replaced by \code{newName}.  Hence \code{oldName} is only
-necessary if \code{MCMCresult} is a list of \code{MCMCresult} objects.
+If \code{oldName} is omitted, \code{MCMCresult} must be a single \code{MCMCresult}
+object, in which the existing MCMC method name will be replaced by
+\code{newName}.  Hence \code{oldName} is only necessary if \code{MCMCresult} is a
+list of \code{MCMCresult} objects.
 }

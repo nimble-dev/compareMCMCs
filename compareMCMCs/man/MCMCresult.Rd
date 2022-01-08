@@ -9,51 +9,60 @@ R6 class to hold MCMC samples, timing results, and metrics
 R6 class to hold MCMC samples, timing results, and metrics
 }
 \seealso{
-\code{\link{renameMCMC}} to change the name of an MCMC method throughout
-the structure of
-a list of \code{MCMCresult} objects.
+\code{\link{renameMCMC}} to change the name of an MCMC
+method throughout the structure of a list of \code{MCMCresult}
+objects.
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
 \item{\code{MCMC}}{Optional name for the MCMC method.}
 
-\item{\code{samples}}{Matrix of MCMC samples. Rows are for MCMC iterations.  Columns are for
-parameters.  Columns must be named.}
+\item{\code{samples}}{Matrix of MCMC samples. Rows are for MCMC
+iterations.  Columns are for parameters.  Columns must be
+named.}
 
-\item{\code{times}}{A list of times including elements for \code{setup}, \code{burnin},
-\code{postburnin} (sampling for recorded samples), and \code{sampling} (normally
-\code{burnin} + \code{postburnin}).  Each list element should be a single numeric value.}
+\item{\code{times}}{A list of times including elements for \code{setup},
+\code{burnin},  \code{postburnin} (sampling for recorded samples), and
+\code{sampling} (normally  \code{burnin} + \code{postburnin}).  Each list
+element should be a single numeric value.}
 
-\item{\code{metrics}}{A list of MCMC performance metrics such as effective sample size
-(ESS), efficiency, mean, median, and credible interval boundaries. \code{metrics}
-is organized as a list with three elements: \code{byMCMC}, \code{byParameter}, and \code{other}
+\item{\code{metrics}}{A list of MCMC performance metrics such as
+effective sample size (ESS), efficiency, mean, median, and
+credible interval boundaries. \code{metrics} ' is organized as a list
+with three elements: \code{byMCMC}, \code{byParameter}, and \code{other} '
 (currently unused).
 
 \code{byMCMC} is for metrics with one number for an entire
-MCMC sample (as opposed to one number for each parameter).  \code{byMCMC} is a
-data frame with one row and columns for MCMC name
-each metric.  These would be metrics where there is a single scalar for the
-entire MCMC, such as min(efficiency).
+MCMC sample (as opposed to one number for each parameter).
+\code{byMCMC} is a data frame with one row and columns for MCMC name
+each metric.  These would be metrics where there is a single
 
 \code{byParameter} is for metrics with one number for each parameter in each
 MCMC sample.  \code{byParameter} is a \code{data.frame} with one row for each
-MCMC-x-parameter combination and columns for MCMC method, parameter name, and
-each metric.  There will only be one MCMC method name (all entries in the
+MCMC-x-parameter combination and columns for MCMC method,
+parameter name, and
+each metric.  There will only be one MCMC method name
+(all entries in the
 MCMC column will be the same).
 
 The MCMC columns in \code{byMCMC} and \code{byParameter}
 are useful for combining
 \code{metrics} from a list of \code{MCMCresult} objects,
 such as done by \code{\link{combineMetrics}}, and for retaining
-MCMC method labels if these \code{data.frames} are copied and used outside of
+MCMC method labels if these \code{data.frames} are copied and used
+outside of
 an \code{MCMCresult} object.
 
 \code{other} is simply an arbitrary list. This allows arbitrarily structured
 metrics to be saved.
 
-Elements of \code{metrics} are normally populated by \code{addMetrics} or \code{compareMCMCs}
+Elements of \code{metrics} are normally populated by \code{addMetrics} or
+\code{compareMCMCs}
 (which calls \code{addMetrics}).}
+
+\item{\code{sessionInfo}}{Result of running \code{sessionInfo()} prior to calling
+an MCMC engine, if requested.}
 }
 \if{html}{\out{</div>}}
 }
@@ -178,7 +187,8 @@ Clear (reset) \code{byParameter} and/or \code{byMCMC} metrics
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{byParameter}}{\code{logical} indicating whether to clear \code{byParameter} metrics}
+\item{\code{byParameter}}{\code{logical} indicating whether to clear \code{byParameter}
+metrics}
 
 \item{\code{byMCMC}}{\code{logical} indicating whether to clear \code{byMCMC} metrics}
 }
@@ -186,10 +196,12 @@ Clear (reset) \code{byParameter} and/or \code{byMCMC} metrics
 }
 \subsection{Details}{
 \code{byParameter} metrics are initialized to a \code{data.frame} with columns for
-\code{MCMC} (all the same entry, the \code{MCMC} field) and \code{Parameter} (taken from column
+\code{MCMC} (all the same entry, the \code{MCMC} field) and \code{Parameter}
+(taken from column
 names of the \code{samples}).
 
-\code{byMCMC} metrics are initialized to a \code{data.frame} with a column for \code{MCMC}.
+\code{byMCMC} metrics are initialized to a \code{data.frame}
+with a column for \code{MCMC}.
 }
 
 }
@@ -205,9 +217,12 @@ Add one set of metric results
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{metricResult}}{A list with possible elements \code{byParameter}, \code{byMCMC}, and
-\code{other}.  These are typically returned from a metric function called via
-\code{addMetric}. Each is combined with previous metrics already in the corresponding
+\item{\code{metricResult}}{A list with possible elements \code{byParameter},
+\code{byMCMC}, and
+\code{other}.  These are typically returned from a metric function
+called via
+\code{addMetric}. Each is combined with previous metrics already in the
+corresponding
 elements of \code{metrics}.}
 }
 \if{html}{\out{</div>}}

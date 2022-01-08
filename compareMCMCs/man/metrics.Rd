@@ -9,6 +9,7 @@
 \alias{MCMCmetric_CI95low}
 \alias{MCMCmetric_CI95upp}
 \alias{MCMCmetric_ESS}
+\alias{MCMCmetric_efficiency}
 \title{Built-in metrics for \code{MCMCresult} objects}
 \usage{
 MCMCmetric_mean(result, ...)
@@ -24,11 +25,17 @@ MCMCmetric_CI95low(result, ...)
 MCMCmetric_CI95upp(result, ...)
 
 MCMCmetric_ESS(result, options = NULL)
+
+MCMCmetric_efficiency(result, options = NULL)
 }
 \arguments{
-\item{result}{An MCMCresult object, normally a list element returned by \code{\link{compareMCMCs}}}
+\item{result}{An MCMCresult object, normally a list element
+returned by \code{\link{compareMCMCs}}}
 
-\item{options}{A (metric-specific) list of named control options accepted by some metrics.}
+\item{...}{Possible additional arguments to metric functions.}
+
+\item{options}{A (metric-specific) list of named control options
+accepted by some metrics.}
 }
 \value{
 A list that may contain elements named:
@@ -42,35 +49,40 @@ will become parameter names in the \code{byParameter} element of
 
 It is also valid to return a list of such lists.
 
-In normal use, metrics are called by \code{addMetrics} (possibly from \code{compareMCMCs})
-and the results are collated in the \code{metrics} field of \code{MCMCresult} objects.
+In normal use, metrics are called by \code{addMetrics} (possibly from
+\code{compareMCMCs}) and the results are collated in the \code{metrics} field
+of \code{MCMCresult} objects.
 }
 \description{
 These functions are normally called via compareMCMCs or addMetric.
 }
 \details{
-A metric is a summary of MCMC output.  The summary may include results for each parameter,
-for each MCMC sample (across all parameters), and/or by arbitrary list. The last option is
-not used by any built-in metrics.
+A metric is a summary of MCMC output.  The summary may include
+results for each parameter, for each MCMC sample (across all
+parameters), and/or by arbitrary list. The last option is not used
+by any built-in metrics.
 
 The built-in metrics include:
 \itemize{
 \item mean : mean for each parameter
 \item median : median for each parameter
 \item sd : standard deviation for each parameter
-\item CI95 : both ends of 95\% credible interval, a combination of CI95low and CI95upp
+\item CI95 : both ends of 95\% credible interval, a combination of
+CI95low and CI95upp
 \item CI95low : lower end of 95\% credible interval
 \item CI95upp : upper end of 95\% credible interval
-\item ESS : effective sample size (ESS).  Control options
-include \code{ESSfun} (a function to estimate ESS, with default = \code{coda::effectiveSize}),
-and \code{suffix} (a character string to be appended to "ESS" to form a label,
-with default = "").
-\item efficiency or (synonomously) efficiency_coda : effective sample size (ESS) and
-efficiency (ESS / computation time).  If \code{ESS} was already calculated, it will not
-be re-calculated.  Control options include \code{ESSfun} (passed to \code{ESS}), \code{suffix}
-(a character string to be appended to "efficiency" to form a label,
-with default = ""), and \code{time} (a character string to be used as an expression
-to calculate the computation time from elements of the \code{times} element of the
-\code{result} object, with default = "sampling" for burning+postburnin times).
+\item ESS : effective sample size (ESS).  Control options include
+\code{ESSfun} (a function to estimate ESS, with default =
+\code{coda::effectiveSize}), and \code{suffix} (a character string to be
+appended to "ESS" to form a label, with default = "").
+\item efficiency or (synonomously) efficiency_coda : effective sample
+size (ESS) and efficiency (ESS / computation time).  If \code{ESS} was
+already calculated, it will not be re-calculated.  Control options
+include \code{ESSfun} (passed to \code{ESS}), \code{suffix} (a character string to
+be appended to "efficiency" to form a label, with default = ""),
+and \code{time} (a character string to be used as an expression to
+calculate the computation time from elements of the \code{times} element
+of the \code{result} object, with default = "sampling" for
+burning+postburnin times).
 }
 }

@@ -3,16 +3,23 @@
 #' run one or more MCMC engines for one model specification, with 
 #' timing and performance metrics calculated.
 #'
-#' @param modelInfo A list of nimble model-specification information,
-#'     which may be relevant for JAGS, WinBUGS and/or OpenBUGS as
-#'     well. To provide information for a different MCMC engine, see argument
-#'     \code{externalMCMCinfo}.  Named elements in \code{modelInfo} can include `code` (model
-#'     code as returned from `nimbleCode`), `data` (a list with data),
-#'     `constants` (a list with data and/or constants), and `inits` (a
-#'     list of initial values).  See `nimbleModel` in package nimble
-#'     for for information on these arguments.  For JAGS, WinBUGS and
-#'     OpenBUGS, many models can be run from the same
-#'     specification since they use nearly the same model language.
+#' @param modelInfo A list of nimble model-specification information 
+#'   (which may be relevant for JAGS, WinBUGS and/or OpenBUGS as
+#'   well) and/or a nimble model itself. To provide information 
+#'   for a different MCMC engine, see
+#'   argument \code{externalMCMCinfo}.  Named elements in
+#'   \code{modelInfo} can include `code` (model code as returned from
+#'   `nimbleCode`), `data` (a list with data), `constants` (a list
+#'   with data and/or constants), `inits` (a list of initial
+#'   values), and/or `model` (an object returned from `nimbleModel`).
+#'   If `model` is not provided, and if an R model will be needed, then
+#'   `nimbleModel` will be called to create one using `code`, `data`, and/or `inits`.
+#'   See `nimbleModel` in package nimble for for information
+#'   on these arguments.  For JAGS, WinBUGS and OpenBUGS, many models
+#'   can be run from the same specification since they use nearly the
+#'   same model language.  If `model` is provided, the other elements
+#'   will not be needed if only nimble MCMCs are used but will be needed if JAGS,
+#'   WinBUGS or OpenBUGS will be used..
 #' 
 #' @param MCMCcontrol A list with fields `niter` (number of
 #'     iterations), `thin` (thinning interval), and `burnin` (number
@@ -20,21 +27,27 @@
 #'     sample).
 #'
 #' @param MCMCs A character vector of MCMC cases to run.  This can
-#'     include "nimble" (default nimble samplers), "jags", "stan",
-#'      one of several nimble special cases
-#'     (see details below), custom nimble
-#'     sampler configurations provided via argument
-#'     \code{nimbleMCMCdefs}, and external MCMC engines registered via
-#'     \code{\link{registerMCMCengine}}.  See \link{builtin_MCMCs} for information on
-#'     "jags" and "stan".  Support for OpenBUGS and WinBUGS is pending.
+#'   include "nimble" (default nimble samplers), "jags", "stan", one
+#'   of several nimble special cases (see details below), custom
+#'   nimble sampler configurations provided via argument
+#'   \code{nimbleMCMCdefs}, and external MCMC engines registered via
+#'   \code{\link{registerMCMCengine}}.  See \link{builtin_MCMCs} for
+#'   information on "jags" and "stan".  Support for OpenBUGS and
+#'   WinBUGS is pending.
 #'
-#' @param nimbleMCMCdefs A list of information for custom sampler configurations in nimble.  See Details below.
+#' @param monitors A character vector of variable names to monitor
+#'   (record in MCMC output).  If missing, this will be determined
+#'   from the nimble model as all top-level parameter names
+#'   (e.g. hyper-parameters).
+#' 
+#' @param nimbleMCMCdefs A list of information for custom sampler
+#'   configurations in nimble.  See package vignette for details.
 #'
-#' @param externalMCMCinfo A list of arbitrary information for external MCMC engines, 
-#' named by engine names.  If there is an external MCMC engine 
-#'  named "myMCMC", then a list element `myMCMC` of
-#'   \code{externalMCMCinfo} will be passed to the engine as its \code{MCMCinfo}
-#'    argument.
+#' @param externalMCMCinfo A list of arbitrary information for
+#'   external MCMC engines, named by engine names.  If there is an
+#'   external MCMC engine named "myMCMC", then a list element `myMCMC`
+#'   of \code{externalMCMCinfo} will be passed to the engine as its
+#'   \code{MCMCinfo} argument.
 #'
 #' @param metrics Either a character vector of registered metric names
 #'     to apply to each sample, or a list of elements with either
@@ -42,12 +55,32 @@
 #'     \code{\link{addMetrics}} for more information.  A useful set of
 #'     default metrics is provided.
 #'
-#' @param seed an (arbitrary) numeric value passed to `set.seed` to set the
-#'     random-number generator seed before calling each MCMC engine.
-#'     If NULL, no seed is set.  To obtain identical results from one call of `compareMCMCs`
-#'     to the next, use identical `seed` values.
+#' @param metricOptions Optional named list of individual metric
+#'   options passed as the third argument ("`options`") of
+#'   `addMetrics` when MCMC metrics are calculated.
 #'
-#' @param monitors A vector of names of parameters to record in MCMC samples.
+#' @param conversions List of parameter conversion (transformation)
+#'     specifications, useful when different MCMCs use different
+#'     parameterizations.
+#'
+#' @param seed An (arbitrary) numeric value passed to `set.seed` to
+#'   set the random-number generator seed before calling each MCMC
+#'   engine.  If NULL, no seed is set.  To obtain identical results
+#'   from one call of `compareMCMCs` to the next, use identical `seed`
+#'   values.
+#'
+#' @param needRmodel If `TRUE`, a `nimble` model object should definitely be created
+#'  (if necessary, or obtained from `modelInfo$model` if provided) and 
+#'  used, for example to determine variable names.  If missing, `needRmodel`
+#'   will be set
+#'  `TRUE` if `MCMCs` includes "nimble", "jags", "openbugs", or
+#'  "winbugs".
+#'
+#' @param verbose If `TRUE`, more verbose output may be generated.
+#'
+#' @param sessionInfo If `TRUE`, record the results of
+#'     `sessionInfo()`, run before calling each MCMC, with each MCMC
+#'     result.
 #' 
 #' @details The special cases provided for the `MCMCs` argument
 #'     include: 
@@ -58,15 +91,16 @@
 #' - "nimble_RW": use all adaptive random-walk Metropolis-Hastings samplers.
 #' - "nimble_slice": use all slice samplers.
 #'
-#' See package vignette for examples.
+#' See package vignette for more details and examples.
 #'
 #' @return A list of `MCMCresult` objects.
-#' 
+#'
+#' @importFrom nimble nimbleModel
 #' @export
 compareMCMCs <- function(modelInfo = list(),
                          MCMCcontrol = list(niter = 10000,
                                             thin = 1,
-                                            burnin = 2000), ##  niter, thin, burnin
+                                            burnin = 2000),
                          MCMCs = 'nimble',
                          monitors = character(),
                          nimbleMCMCdefs = list(),
@@ -81,31 +115,27 @@ compareMCMCs <- function(modelInfo = list(),
                          conversions = list(),
                          seed = NULL,
                          needRmodel,
-                         verbose = TRUE
+                         verbose = TRUE,
+                         sessionInfo = TRUE
                          ) {
   if(length(MCMCs) == 0) 
-    stop("No MCMCs requested.")
+    stop("No MCMCs requested.") # lacks test coverage
   MCMCs_with_labels <- NULL
   if(!is.null(names(MCMCs)))
-    MCMCs_with_labels <- MCMCs ## for use later to relabel results
+    MCMCs_with_labels <- MCMCs ## for use later to relabel results # lacks test coverage
 
   # Check for valid (niter, thin, burnin) triplet.
   niter <- if(is.null(MCMCcontrol$niter)) 10000 else MCMCcontrol$niter
   thin  <- if(is.null(MCMCcontrol$thin))  1     else MCMCcontrol$thin
   burnin <- if(is.null(MCMCcontrol$burnin)) 2000 else MCMCcontrol$burnin
   
-  ## SP: burnin is discarder pre thinning form nimble 0-6-11
-  # nkeep <- floor(niter/thin) - burnin    ## wrong
-  # if(nkeep < 0)
-  #   stop(paste0('niter/thin - burnin is negative.\n',
-  #               'This would not retain any samples.\n',
-  #               'Try increasing niter, or decreasing burnin.'))
-  # burninFraction <- burnin / (nkeep + burnin)
+  ## SP: burnin is discarded pre thinning form nimble 0-6-11
   
-  ## Build the R model to use at least as a reference for model parameters.
-  ## Later we could modify this so that the model is only built if it is really needed.
-  ## Or we could at least set calculate = FALSE and then do a calculate
-  ## later if a nimble MCMC will be run.
+  ## Build the R model to use at least as a reference for model
+  ## parameters.  Later we could modify this so that the model is only
+  ## built if it is really needed.  Or we could at least set calculate
+  ## = FALSE and then do a calculate later if a nimble MCMC will be
+  ## run.
   
   if(missing(needRmodel))
     needRmodel <- `|`(
@@ -114,23 +144,20 @@ compareMCMCs <- function(modelInfo = list(),
     )
   
   if(needRmodel) {
-    if(!("Rmodel" %in% names(modelInfo))) {
+    if(!("model" %in% names(modelInfo))) {
       if(verbose)
         message("building nimble model...")
-        ## The following should work:
-        ## Rmodel <- do.call('nimbleModel', modelInfo, quote = TRUE)
-        ## but momentarily that gives a bug in nimble 0.8.0, so instead we use:
-        Rmodel <- try(
-          nimbleModel(code = modelInfo$code,
-                      data = if(!is.null(modelInfo$data)) 
-                        modelInfo$data else list(),
-                      constants = if(!is.null(modelInfo$constants)) 
-                        modelInfo$constants else list(),
-                      inits = if(!is.null(modelInfo$inits))
-                        modelInfo$inits else list())
-        )
+      Rmodel <- try(
+        nimble::nimbleModel(code = modelInfo$code,
+                            data = if(!is.null(modelInfo$data)) 
+                              modelInfo$data else list(),
+                            constants = if(!is.null(modelInfo$constants)) 
+                              modelInfo$constants else list(),
+                            inits = if(!is.null(modelInfo$inits))
+                              modelInfo$inits else list())
+      )
       if(inherits(Rmodel, 'try-error'))
-        stop("Problem building Rmodel.")
+        stop("Problem building Rmodel.") # lacks test coverage
     } else {
       Rmodel <- modelInfo$model
       if(!inherits(Rmodel, "RmodelBaseClass"))
@@ -156,7 +183,8 @@ compareMCMCs <- function(modelInfo = list(),
   } else {
     Rmodel <- NULL
   }
-  monitorVars <- unique(nimble:::removeIndexing(monitors))
+  monitorVars <- unique(gsub("\\[.*", "", monitors))
+  # same as monitorVars <- unique(nimble:::removeIndexing(monitors)
   ## set summary stats:
   ## This step may not be necessary.  If necessary, it should be handled 
   ## by MCMCmetric functions.
@@ -172,7 +200,7 @@ compareMCMCs <- function(modelInfo = list(),
       nimbleMCMCs <- c(nimbleMCMCs, mcmc)
     else if(mcmc %in% names(nimbleMCMCdefs))
       nimbleMCMCs <- c(nimbleMCMCs, mcmc)
-    else warning(paste('No MCMC definition is available for requested MCMC "',
+    else warning(paste('No MCMC definition is available for requested MCMC "', # lacks test coverage
                        mcmc,'".'))
   }
 
@@ -187,11 +215,11 @@ compareMCMCs <- function(modelInfo = list(),
   monitorInfo <- list(monitorVars = monitorVars,
                       monitors = monitors)
   modelInfo$model <- Rmodel
-  ## The original version of MCMCsuite used MCMCs in a particular order,
-  ## regardless of the order of the MCMCs argument.  To preserve behavior,
-  ## we do the same.
-  ## In the future we may choose to order the MCMCs according to the MCMCs argument,
-  ## so the user can manage it in case they want to "watch" one go first.
+  ## The original version of MCMCsuite used MCMCs in a particular
+  ## order, regardless of the order of the MCMCs argument.  To
+  ## preserve behavior, we do the same.  In the future we may choose
+  ## to order the MCMCs according to the MCMCs argument, so the user
+  ## can manage it in case they want to "watch" one go first.
 
   ## If present, use the order 'winbugs', 'openbugs', 'jags', 'stan'
   ## simply to imitate original behavior precisely, although it
@@ -204,20 +232,23 @@ compareMCMCs <- function(modelInfo = list(),
   results <- list()
   ## run through plugin MCMCs
   for(mcmc in externalMCMCs) {
-    if(!is.null(seed)) set.seed(as.numeric(seed))
+    if(!is.null(seed)) set.seed(as.numeric(seed)) # lacks test coverage
     thisMCMCinfo <- externalMCMCinfo[[mcmc]]
+    if(sessionInfo) sessionInfo_result <- sessionInfo()
     results[[mcmc]] <- try(MCMCdefs_env[[mcmc]](MCMCinfo = thisMCMCinfo,
                                                 MCMCcontrol = MCMCcontrol,
                                                 monitorInfo = monitorInfo,
                                                 modelInfo = modelInfo))
     if(inherits(results[[mcmc]], 'try-error')) {
-      warning(paste("MCMC ", mcmc, " failed.\n"))
+      warning(paste("MCMC ", mcmc, " failed.\n")) # lacks test coverage
       results[[mcmc]] <- NULL
     } else {
       ## set field MCMC, which is used as a name, if it was not
       ## set by the MCMC interface (MCMCdefs_env[[mcmc]])
       if(length(results[[mcmc]]$MCMC)==0)
         results[[mcmc]]$MCMC <- mcmc
+      if(sessionInfo)
+        results[[mcmc]]$sessionInfo <- sessionInfo_result
     }
   }
   ## run any nimble MCMCs
@@ -229,12 +260,13 @@ compareMCMCs <- function(modelInfo = list(),
                                    MCMCcontrol,
                                    monitorInfo,
                                    seed,
-                                   parent.frame = parent.frame()))
+                                   parent.frame = parent.frame(),
+                                   sessionInfo = sessionInfo))
   }
   if(!inherits(nimbleResults, 'try-error'))
     results <- c(results, nimbleResults)
   else
-    warning("There was a problem compiling or running nimble MCMCs.")
+    warning("There was a problem compiling or running nimble MCMCs.") # lacks test coverage
 
   ## Standardize column names of samples
   ## Make this optional, and wrap it in try()
@@ -242,12 +274,14 @@ compareMCMCs <- function(modelInfo = list(),
     catcher <- try({
       if(!is.null(results[[i]]$samples)) {
         orig.col.names <- colnames(results[[i]]$samples)
-        new.col.names <- unlist(lapply(orig.col.names,
-                                       function(x) deparse(parse(text = x, keep.source = FALSE)[[1]])
-                                       ))
+        new.col.names <- unlist(
+          lapply(orig.col.names,
+                 function(x) deparse(parse(text = x, keep.source = FALSE)[[1]])
+                 ))
         colnames(results[[i]]$samples) <- new.col.names
       }
-    }) ## There is no meaningful handling of errors, but at least the function will continue and the MCMCs will not be lost.
+    }) ## There is no meaningful handling of errors, but at least the
+       ## function will continue and the MCMCs will not be lost.
   }
   
   catcher <- try({
@@ -266,7 +300,7 @@ compareMCMCs <- function(modelInfo = list(),
     if(!is.null(metrics)) {
       not_used <- addMetrics(results, metrics, metricOptions)
       if(inherits(not_used, 'try-error'))
-        warning("There was a problem calculating metrics.")
+        warning("There was a problem calculating metrics.") # lacks test coverage
     }
   })
 

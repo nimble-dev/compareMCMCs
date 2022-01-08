@@ -19,7 +19,7 @@ MCMCdef_dummy_impl <- function(MCMCinfo,
     monitorInfo$monitorVars <- 'param'
   }
   dummy_results <- matrix(
-    rnorm(length(monitorInfo$monitorVars) * MCMCcontrol$niter),
+    stats::rnorm(length(monitorInfo$monitorVars) * MCMCcontrol$niter),
     nrow = MCMCcontrol$niter,
     dimnames = list(NULL, monitorInfo$monitorVars)
   )
