@@ -30,6 +30,7 @@ MCMCdef_jags_impl <- function(MCMCinfo,
     })
     setupTime <- setupTimeResult[3]
     
+    burninTimeResult <- system.time(0)   ## needs to be defined even when burnin = 0
     burninTime <- 0
     if(MCMCcontrol$burnin > 0) {
         burninTimeResult <- system.time(
