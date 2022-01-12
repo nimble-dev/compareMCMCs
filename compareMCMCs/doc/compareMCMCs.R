@@ -102,8 +102,8 @@ res$nimble$metrics
 MCMCmetric_quartiles <- function(result, options) {
   p25 <- apply(result$samples, 2, quantile, probs = 0.25)
   p75 <- apply(result$samples, 2, quantile, probs = 0.75)
-  ## q25 and q75 are named vectors with names matching model parameters
-  ## i.e. column names of result$samples
+  # q25 and q75 are named vectors with names matching model parameters
+  # i.e. column names of result$samples
   maxDiff <- max(p75-p25)
   list(byParameter = list(p25 = p25,
                           p75 = p75),
@@ -133,8 +133,8 @@ res <- compareMCMCs(modelInfo,
                                        niter = 2000,
                                        burnin = 100))
 
-## We will look at the result using combineMetrics
-## rather than generating new html pages.
+# We will look at the result using combineMetrics
+# rather than generating new html pages.
 combineMetrics(res)
 
 ## -----------------------------------------------------------------------------
@@ -145,7 +145,7 @@ conversions <- list(nimble = reparam,
 applyConversions(res, conversions)
 clearMetrics(res)
 addMetrics(res) # use default metrics
-combineMetrics(res) ## An easy way to see that it worked
+combineMetrics(res) # An easy way to see that it worked
 
 ## -----------------------------------------------------------------------------
 combineMetrics(res, include_times = TRUE)
