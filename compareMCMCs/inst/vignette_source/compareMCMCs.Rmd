@@ -112,7 +112,7 @@ Results are [here](example1.html).  In this case, all samplers are so efficient 
 
 When using the same model code for nimble and any of JAGS, WinBUGS or OpenBUGS, it is important to note that nimble makes a distinction between "data" and "constants", which the other packages group together as "data".  In nimble, constants are values necessary to define a model, such as "N" in "for(i in 1:N)", while data are observed scientific data.  Since nimble models are objects that can be manipulated, it is possible to change data values, although that won't happen just from MCMC sampling.
 
-When both data and constants are provided as "constants" to nimble, it attempts to determine which values should be treated as data.  Correspondingly, the constants will be passed to the other packages as data.  Therefore, it is advisable to provide both data and constants as "constants" when using both nimble and JAGS, WinBUGS or OpenBUGS.  See the NIMBLE User Manual (http://r-nimble.org) for more information about data and constants in nimble.
+When both data and constants are provided as "constants" to nimble, it attempts to determine which values should be treated as data.  Correspondingly, the constants will be passed to the other packages as data.  Therefore, it is advisable to provide both data and constants as "constants" when using both nimble and JAGS, WinBUGS or OpenBUGS.  See the NIMBLE User Manual (https://r-nimble.org) for more information about data and constants in nimble.
 
 # MCMC efficiency and pace
 
