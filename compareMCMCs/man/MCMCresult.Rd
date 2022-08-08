@@ -69,18 +69,18 @@ an MCMC engine, if requested.}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{MCMCresult$new()}}
-\item \href{#method-setSamples}{\code{MCMCresult$setSamples()}}
-\item \href{#method-rename}{\code{MCMCresult$rename()}}
-\item \href{#method-initializeMetrics}{\code{MCMCresult$initializeMetrics()}}
-\item \href{#method-clearMetrics}{\code{MCMCresult$clearMetrics()}}
-\item \href{#method-addMetricResult}{\code{MCMCresult$addMetricResult()}}
-\item \href{#method-clone}{\code{MCMCresult$clone()}}
+\item \href{#method-MCMCresult-new}{\code{MCMCresult$new()}}
+\item \href{#method-MCMCresult-setSamples}{\code{MCMCresult$setSamples()}}
+\item \href{#method-MCMCresult-rename}{\code{MCMCresult$rename()}}
+\item \href{#method-MCMCresult-initializeMetrics}{\code{MCMCresult$initializeMetrics()}}
+\item \href{#method-MCMCresult-clearMetrics}{\code{MCMCresult$clearMetrics()}}
+\item \href{#method-MCMCresult-addMetricResult}{\code{MCMCresult$addMetricResult()}}
+\item \href{#method-MCMCresult-clone}{\code{MCMCresult$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-MCMCresult-new"></a>}}
+\if{latex}{\out{\hypertarget{method-MCMCresult-new}{}}}
 \subsection{Method \code{new()}}{
 Create a new \code{MCMCresult} object.
 \subsection{Usage}{
@@ -101,8 +101,8 @@ will be initialized from them.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-setSamples"></a>}}
-\if{latex}{\out{\hypertarget{method-setSamples}{}}}
+\if{html}{\out{<a id="method-MCMCresult-setSamples"></a>}}
+\if{latex}{\out{\hypertarget{method-MCMCresult-setSamples}{}}}
 \subsection{Method \code{setSamples()}}{
 Populate the samples and initialize the metrics
 \subsection{Usage}{
@@ -121,8 +121,8 @@ NULL
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-rename"></a>}}
-\if{latex}{\out{\hypertarget{method-rename}{}}}
+\if{html}{\out{<a id="method-MCMCresult-rename"></a>}}
+\if{latex}{\out{\hypertarget{method-MCMCresult-rename}{}}}
 \subsection{Method \code{rename()}}{
 Change the MCMC method name from oldName to newName
 \subsection{Usage}{
@@ -150,8 +150,8 @@ NULL
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-initializeMetrics"></a>}}
-\if{latex}{\out{\hypertarget{method-initializeMetrics}{}}}
+\if{html}{\out{<a id="method-MCMCresult-initializeMetrics"></a>}}
+\if{latex}{\out{\hypertarget{method-MCMCresult-initializeMetrics}{}}}
 \subsection{Method \code{initializeMetrics()}}{
 Initialize metrics if necessary
 \subsection{Usage}{
@@ -176,8 +176,8 @@ how metrics are initialized.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clearMetrics"></a>}}
-\if{latex}{\out{\hypertarget{method-clearMetrics}{}}}
+\if{html}{\out{<a id="method-MCMCresult-clearMetrics"></a>}}
+\if{latex}{\out{\hypertarget{method-MCMCresult-clearMetrics}{}}}
 \subsection{Method \code{clearMetrics()}}{
 Clear (reset) \code{byParameter} and/or \code{byMCMC} metrics
 \subsection{Usage}{
@@ -206,8 +206,8 @@ with a column for \code{MCMC}.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-addMetricResult"></a>}}
-\if{latex}{\out{\hypertarget{method-addMetricResult}{}}}
+\if{html}{\out{<a id="method-MCMCresult-addMetricResult"></a>}}
+\if{latex}{\out{\hypertarget{method-MCMCresult-addMetricResult}{}}}
 \subsection{Method \code{addMetricResult()}}{
 Add one set of metric results
 \subsection{Usage}{
@@ -229,8 +229,8 @@ elements of \code{metrics}.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-MCMCresult-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-MCMCresult-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

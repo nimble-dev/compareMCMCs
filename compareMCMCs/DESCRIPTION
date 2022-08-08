@@ -29,6 +29,6 @@ Suggests:
     rstan
 URL: https://github.com/nimble-dev/compareMCMCs
 BugReports: https://github.com/nimble-dev/compareMCMCs/issues
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3

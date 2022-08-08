@@ -44,6 +44,26 @@ MCMCdef_stan_impl <- function(MCMCinfo,
                   "stan entry in externalMCMCinfo."))
   if(!requireNamespace('rstan', quietly = TRUE))
     stop("stan MCMC was requested but the rstan package is not installed.") #lacks test coverage
+
+  # Check for version of rstan that doesn't work on Windows
+  # See https://blog.mc-stan.org/2022/04/26/stan-r-4-2-on-windows/
+  if(!isTRUE(MCMCinfo[["skip_rstan_version_check"]])) {
+    if(.Platform$OS.type == "windows") {
+      if(as.numeric(R.Version()$major) >= 4) {
+        if(as.numeric(R.Version()$minor) >= 2.0) {
+          if(utils::packageVersion("rstan") <= "2.21.5") {
+            stop("This version of rstan on Windows does not work for R version >= 4.2.0.\n",
+                 "See https://blog.mc-stan.org/2022/04/26/stan-r-4-2-on-windows/.\n",
+                 "Try the instructions for installing a newer version from the Stan repositories.\n",
+                 "If you want to disable this error and run rstan anyway,\n",
+                 " include 'skip_rstan_version_check = TRUE' in the externalMCMCinfo element for stan.\n",
+                 "Specifically, in the call to compareMCMCs, use something like\n",
+                 "'externalMCMCinfo=list(stan=list(skip_rstan_version_check=TRUE, <your other stan info>))'.")
+          }
+        }
+      }
+    }
+  }
   
   ## extract base elements from MCMCInfo
   fileStan <- MCMCinfo$file
