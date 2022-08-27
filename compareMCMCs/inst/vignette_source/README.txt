@@ -29,6 +29,13 @@ register the vignette for the vignette( ) function, and various searching has no
 revealed if there is another way to index a vignette for the vignette() function.
 
 Steps:
+0. Open compareMCMCs.Rmd and uncomment the line "work_dir <- getwd()" in
+the first code chunk.  CRAN policy forbids writing into a user's local filesystem
+if they try to build a vignette.  Uncommenting this line serves as confirmation
+that you want the vignette to write jpg and html files in your working directory.
+If you don't do this, links to the results will not work.  The results will be in
+tempdir() and may be erased after step 1 (next).
+
 1. Within this directory, vignette_source, knit compareMCMCs.Rmd into
 compareMCMCs.html.
 
@@ -37,8 +44,9 @@ directory) to embed each of the jpgs into each of the example results.  Each
 call gives a warning about an incomplete final line.  These seem harmless.
 
 This code should do it:
+source("embed_jpg_in_html.R")
 system2("cp", c("example1.html", "example1_orig.html")) # save original copy 
-embed_jpg_in_html("example1.html", "example1_efficiencyDetails.jpg", overwrite = TRUE)
+embed_jpg_in_html("example1.html", "example1_efficiencyDetails.jpg", overwrite = TRUE) # warnings about incomplete final line are no problem.
 embed_jpg_in_html("example1.html", "example1_efficiencySummaryAll.jpg", overwrite = TRUE)
 embed_jpg_in_html("example1.html", "example1_paceSummaryAll.jpg", overwrite = TRUE)
 embed_jpg_in_html("example1.html", "example1_posteriorSummary.jpg", overwrite = TRUE)
@@ -52,7 +60,8 @@ embed_jpg_in_html("example2.html", "example2_paceSummaryAll.jpg", overwrite = TR
 embed_jpg_in_html("example2.html", "example2_posteriorSummary.jpg", overwrite = TRUE)
 # Check that example2.html renders correctly in a browser
 
-3. Copy compareMCMCs.html, example1.html, and example2.html into inst/doc
+3. purl("compareMCMCs.Rmd") # generate compareMCMCs.R
 
-4. Revise inst/index.html if desired.
+4. Copy compareMCMCs.html, example1.html, and example2.html into inst/doc
 
+5. Possibly inst/index.html?

@@ -181,16 +181,18 @@ test_that("various metrics and comparison pages work", {
   # those are correctly handled as NAs, leaving empty cells in the
   # output table.
   make_MCMC_comparison_pages(results,
+                             dir = tempdir(),
                              pageComponents = list(
                                timing = TRUE, posteriorSummary = TRUE),
                              modelName = 'test model')
-  expect_true("test model.html" %in% list.files())
-  expect_true("test model_posteriorSummary.jpg" %in% list.files()) 
+  expect_true("test model.html" %in% list.files(tempdir()))
+  expect_true("test model_posteriorSummary.jpg" %in% list.files(tempdir()))
 
   make_MCMC_comparison_pages(results,
+                             dir = tempdir(),
                              modelName = 'test model all')
-  expect_true("test model all.html" %in% list.files())
-  expect_true("test model all_posteriorSummary.jpg" %in% list.files()) 
+  expect_true("test model all.html" %in% list.files(tempdir()))
+  expect_true("test model all_posteriorSummary.jpg" %in% list.files(tempdir()))
   
   
   results_rep <- list(
@@ -216,26 +218,29 @@ test_that("various metrics and comparison pages work", {
              MCMCmetric_efficiency)
   results_both <- c(results, results_rep)
   make_MCMC_comparison_pages(results_both,
+                             dir = tempdir(),
                              modelName = 'test model all rep')
-  expect_true("test model all rep.html" %in% list.files())
-  expect_true("test model all rep_posteriorSummary.jpg" %in% list.files()) 
+  expect_true("test model all rep.html" %in% list.files(tempdir()))
+  expect_true("test model all rep_posteriorSummary.jpg" %in% list.files(tempdir()))
   
   junk <- compareMCMCs:::minMeanComparisonComponent(combo)
   expect_true(inherits(junk$plottable, "ggplot"))
   
   make_MCMC_comparison_pages(results,
+                             dir = tempdir(),
                              pageComponents = list(efficiencySummary = TRUE),
                              modelName = 'test model2')
-  expect_true("test model2.html" %in% list.files())
-  expect_true("test model2_efficiencySummary.jpg" %in% list.files()) 
+  expect_true("test model2.html" %in% list.files(tempdir()))
+  expect_true("test model2_efficiencySummary.jpg" %in% list.files(tempdir()))
   
   make_MCMC_comparison_pages(results,
+                             dir = tempdir(),
                              pageComponents = list(efficiencySummary = TRUE,
                                                    posteriorSummary = TRUE),
                              modelName = 'test model3')
-  expect_true("test model3.html" %in% list.files())
-  expect_true("test model3_posteriorSummary.jpg" %in% list.files()) 
-  expect_true("test model3_efficiencySummary.jpg" %in% list.files()) 
+  expect_true("test model3.html" %in% list.files(tempdir()))
+  expect_true("test model3_posteriorSummary.jpg" %in% list.files(tempdir()))
+  expect_true("test model3_efficiencySummary.jpg" %in% list.files(tempdir()))
   
   junk <- compareMCMCs:::allParamEfficiencyComparisonComponent(combo)
   expect_true(inherits(junk$plottable, "ggplot"))
@@ -248,11 +253,12 @@ test_that("various metrics and comparison pages work", {
   expect_true(inherits(junk$plottable$allParams, "ggplot"))
   
   make_MCMC_comparison_pages(results,
+                             dir = tempdir(),
                              modelName = 'test model4')
-  expect_true("test model4.html" %in% list.files())
-  expect_true("test model4_posteriorSummary.jpg" %in% list.files()) 
-  expect_true("test model4_efficiencySummaryAll.jpg" %in% list.files()) 
-  expect_true("test model4_efficiencyDetails.jpg" %in% list.files()) 
-  expect_true("test model4_paceSummaryAll.jpg" %in% list.files())
+  expect_true("test model4.html" %in% list.files(tempdir()))
+  expect_true("test model4_posteriorSummary.jpg" %in% list.files(tempdir()))
+  expect_true("test model4_efficiencySummaryAll.jpg" %in% list.files(tempdir()))
+  expect_true("test model4_efficiencyDetails.jpg" %in% list.files(tempdir()))
+  expect_true("test model4_paceSummaryAll.jpg" %in% list.files(tempdir()))
 }
 )

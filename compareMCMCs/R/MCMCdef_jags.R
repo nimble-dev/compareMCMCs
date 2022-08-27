@@ -16,7 +16,7 @@ MCMCdef_jags_impl <- function(MCMCinfo,
                               monitorInfo, 
                               modelInfo) {
   if(requireNamespace('rjags', quietly = TRUE)) {
-    modelFileName <- 'model.txt'
+    modelFileName <- file.path(tempdir(), 'model.txt')
     code <- modelInfo$code
     constantsAndData <- c(modelInfo$constants, modelInfo$data)
     writeLines(paste0('model\n', paste0(deparse(code), collapse='\n')),

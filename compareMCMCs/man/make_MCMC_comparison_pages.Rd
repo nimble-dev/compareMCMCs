@@ -6,7 +6,7 @@
 \usage{
 make_MCMC_comparison_pages(
   comparisonResults,
-  dir = ".",
+  dir = tempdir(),
   pageComponents,
   modelName = "model",
   control,
@@ -18,7 +18,9 @@ make_MCMC_comparison_pages(
 such as returned by \code{\link{compareMCMCs}}.}
 
 \item{dir}{A directory in which to place the html file and any
-figure files used in it.}
+figure files used in it.  This defaults to tempdir() (which
+will be erased when the R session is closed).
+Use \code{dir = getwd()} to use current working directory.}
 
 \item{pageComponents}{A list whose names are registered page
 components and values are \code{TRUE} (to include a component) or

@@ -11,12 +11,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 ## Note: special steps are needed to build this vignette.
-## This is because it generates html output that it links to.
-## 1. devtools::build_vignettes(clean = FALSE)
-## 2. Move or copy the ten files with "example1" or "example2" in their name
-##    from /vignettes to /doc.  This is the directory where build_vignettes
-##    will have copied compareMCMCs.[R, Rmd, html].
-## 3. Remove outputs from /vignettes if desired.
+## See inst/vignette_source/README.txt.
 ##
 ## If rstan generates C++ output with an error compiling foo.c,
 ## try re-installing rstan. Clues suggest that resulting updates to StanHeaders
@@ -31,6 +26,8 @@ this_system_has_rjags <- requireNamespace("rjags")
 if(!this_system_has_rjags) message("Portions of this vignette use package rjags.  That is not installed, so those portions will be skipped.")
 this_system_has_rstan <- requireNamespace("rstan")
 if(!this_system_has_rstan) message("Portions of this vignette use package rstan.  That is not installed, so those portions will be skipped.")
+work_dir <- tempdir() # This line is the default to respect CRAN policy that a vignette should not generate local files.
+# work_dir <- getwd() # This is what you should use to actually build the vignette and have the internal links work. By uncommenting this line, you are confirming that you accept having this script write jpg and html files locally (besides the knitr output of this file itself).
 ```
 
 # Introduction
@@ -77,7 +74,9 @@ stan_code <- c("data {real y;}",
                "parameters {real a;}",
                "model {target += uniform_lpdf(a | 0, 100);",
                "       target += gamma_lpdf(y | a, 2);}")
-writeLines(stan_code, "toy.stan")
+# By default, work_dir is R's temporary session directory, tempdir().
+# If you want to change it, modify the first code chunk of the R markdown source.
+writeLines(stan_code, file.path(work_dir, "toy.stan"))
 # An alternative way to provide the Stan model is to make a
 # list entered below as stan_model_args (similar to how sampling_args
 # appears in the externalMCMCinfo list).  The elements of stan_model_args
@@ -98,12 +97,12 @@ res <- compareMCMCs(modelInfo,
                                        niter = 2000,
                                        burnin = 100),
                     externalMCMCinfo = list(stan = list(
-                      file = "toy.stan",
+                      file = file.path(work_dir, "toy.stan"),
                       sampling_args = stan_sampling_args))
                     # Stan was not happy with warmup = 100, which would match the others.
 )
-file.remove("toy.stan")
-make_MCMC_comparison_pages(res, modelName = 'example1')
+file.remove(work_dir, "toy.stan")
+make_MCMC_comparison_pages(res, dir = work_dir,  modelName = 'example1')
 ```
 
 Results are [here](example1.html).  In this case, all samplers are so efficient that the comparison between them is not very stable and not meaningful for such a toy model.  On the machine this is being written on, `nimble_slice` is the most efficient MCMC.
@@ -167,7 +166,7 @@ res_nimble <- compareMCMCs(modelInfo,
                                    niter = 4000,
                                    burnin = 200))
 res <- c(res_jags, res_nimble)
-make_MCMC_comparison_pages(res, modelName = 'example2')
+make_MCMC_comparison_pages(res, dir = work_dir, modelName = 'example2')
 ```
 
 Results are [here](example2.html). 
