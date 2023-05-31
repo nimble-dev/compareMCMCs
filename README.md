@@ -1,4 +1,6 @@
 # compareMCMCs
+[![CRAN](https://www.r-pkg.org/badges/version/compareMCMCs)](https://cran.r-project.org/package=compareMCMCs)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.03844/status.svg)](https://doi.org/10.21105/joss.03844)
 
 compareMCMCs is a package for running, managing, and comparing results from different MCMC packages.   It was refactored from the nimble package as part of the release of nimble version 0.8.0.
 
