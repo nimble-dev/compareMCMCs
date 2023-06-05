@@ -2,9 +2,9 @@
 [![CRAN](https://www.r-pkg.org/badges/version/compareMCMCs)](https://cran.r-project.org/package=compareMCMCs)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.03844/status.svg)](https://doi.org/10.21105/joss.03844)
 
-compareMCMCs is a package for running, managing, and comparing results from different MCMC packages.   It was refactored from the nimble package as part of the release of nimble version 0.8.0.
+compareMCMCs is a package for running, managing, and comparing results from different MCMC packages.  It was refactored from the nimble package as part of the release of nimble version 0.8.0.
 
-The User Manual (aka package vignette) giving an overview of compareMCMCs can be viewed [here](https://htmlpreview.github.io/?https://github.com/nimble-dev/compareMCMCs/blob/master/compareMCMCs/doc/compareMCMCs.html).
+The User Manual (aka package vignette) giving an overview of compareMCMCs can be viewed [here](https://htmlpreview.github.io/?https://github.com/nimble-dev/compareMCMCs/blob/vignette_workaround/vignette/compareMCMCs.html).
 
 Right now, compareMCMCs works with NIMBLE, JAGS and Stan.  It has a plug-in system to make it easy to include other MCMC engines in comparisons.
 
@@ -25,21 +25,31 @@ In summary, compareMCMCs provides:
 
 ## Installation
 
-To install compareMCMCs from github (it is not currently on CRAN):
+`compareMCMCs` is on CRAN and can be installed from R via
+
+```r
+install.packages("compareMCMCs")
+```
+
+To install compareMCMCs from Github 
+
 ```r
 library(devtools)
 install_github("nimble-dev/compareMCMCs", subdir = "compareMCMCs")
 ```
-Or, of course, you can download and build the package, which is in directory compareMCMCs.
+Or, of course, you can download and build the package, which is in the directory `compareMCMCs`.
 
-To use the `compareMCMCs` plugin for JAGS you first need to install JAGS. See [JAGS homepage](http://mcmc-jags.sourceforge.net/) for platform based instructions. You will also need the `rjags` package:
+### Dependencies to run MCMC plug-ins 
 
-```
+To use the `compareMCMCs` plugin for JAGS you first need to install JAGS. See [JAGS [homepage](http://mcmc-jags.sourceforge.net/) for platform-based instructions. You will also need the `rjags` package:
+
+```r
 install.packages("rjags")
 ```
 
 To use the `compareMCMCs` plugin for stan, you first need to install the `rstan` package:
-```
+
+```r
 install.packages("rstan")
 ```
 
