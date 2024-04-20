@@ -160,12 +160,16 @@ MCMCresult <- R6::R6Class(
    clearMetrics = function(byParameter = TRUE, byMCMC = TRUE) {
      if(byParameter) {
        params <- colnames(self$samples)
+       fparams <- factor(params, levels=params) # level=params avoids x[1], x[10],..., x[2], x[20], etc..
+       fMCMC <- factor(rep(self$MCMC, length(params)), levels=self$MCMC)
        self$metrics$byParameter <-
-           data.frame(MCMC = rep(self$MCMC, length(params)),
-                      Parameter = params)
+           data.frame(MCMC = fMCMC,
+                      Parameter = fparams)
      }
-     if(byMCMC)
-       self$metrics$byMCMC <- data.frame(MCMC = self$MCMC)
+     if(byMCMC) {
+       fMCMC <- factor(self$MCMC, levels = self$MCMC)
+       self$metrics$byMCMC <- data.frame(MCMC = fMCMC)
+     }
    },
    #' @description 
    #' Add one set of metric results
@@ -201,7 +205,8 @@ MCMCresult <- R6::R6Class(
             thisMetricList <- structure(list(thisMetric),
                                         names = thisMetricName)
           }
-          self$metrics$byMCMC <- merge(self$metrics$byMCMC, thisMetricList)
+          self$metrics$byMCMC <- merge(self$metrics$byMCMC, thisMetricList,
+                                       sort=FALSE)
         }
       }
       if(!is.null(metricResult$byParameter)) {
@@ -215,7 +220,8 @@ MCMCresult <- R6::R6Class(
                                            varnames = c('MCMC', 'Parameter'),
                                            value.name = thisMetricName)
           self$metrics$byParameter <- merge(self$metrics$byParameter,
-                                            thisTidyMetric)
+                                            thisTidyMetric,
+                                            sort=FALSE)
         }
       }
       if(!is.null(metricResult$other)) {

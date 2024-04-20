@@ -262,3 +262,13 @@ test_that("various metrics and comparison pages work", {
   expect_true("test model4_paceSummaryAll.jpg" %in% list.files(tempdir()))
 }
 )
+
+test_that("byParameter sort order is natural", {
+  paramNames <- paste0("x[", 1:20, "]")
+  res <- compareMCMCs::compareMCMCs(needRmodel = FALSE,
+                                    MCMCs = c('dummy'),
+                                    monitors = paramNames,
+                                    MCMCcontrol = list(niter = 2000))
+  expect_identical(as.character(res$dummy$metrics$byParameter$Parameter),
+                   paramNames)
+})

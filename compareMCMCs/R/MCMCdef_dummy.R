@@ -19,9 +19,9 @@ MCMCdef_dummy_impl <- function(MCMCinfo,
     monitorInfo$monitorVars <- 'param'
   }
   dummy_results <- matrix(
-    stats::rnorm(length(monitorInfo$monitorVars) * MCMCcontrol$niter),
+    stats::rnorm(length(monitorInfo$monitors) * MCMCcontrol$niter),
     nrow = MCMCcontrol$niter,
-    dimnames = list(NULL, monitorInfo$monitorVars)
+    dimnames = list(NULL, monitorInfo$monitors)
   )
   dummytime <- 0.1
   dummytime[1:5] <- c(60, 60, 60, 0, 0)
