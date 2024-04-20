@@ -11,12 +11,21 @@ vignette: >
 
 ```{r setup, include=FALSE}
 ## Note: special steps are needed to build this vignette.
-## See inst/vignette_source/README.txt.
+##
+## This package is maintained using the method described here:
+## https://ropensci.org/blog/2019/12/08/precompute-vignettes/
+##
+## That method allows computation to be done on one of the authors' machines
+## while staying consistent with R's vignette system.
+##
+## For more details, see vignettes/README.txt
+## in the package source code.
 ##
 ## If rstan generates C++ output with an error compiling foo.c,
 ## try re-installing rstan. Clues suggest that resulting updates to StanHeaders
 ## seems to fix the problem.
 knitr::opts_chunk$set(
+  cache=FALSE,
   echo = TRUE,
   collapse = TRUE,
   comment = "#>"
@@ -26,8 +35,8 @@ this_system_has_rjags <- requireNamespace("rjags")
 if(!this_system_has_rjags) message("Portions of this vignette use package rjags.  That is not installed, so those portions will be skipped.")
 this_system_has_rstan <- requireNamespace("rstan")
 if(!this_system_has_rstan) message("Portions of this vignette use package rstan.  That is not installed, so those portions will be skipped.")
-work_dir <- tempdir() # This line is the default to respect CRAN policy that a vignette should not generate local files.
-# work_dir <- getwd() # This is what you should use to actually build the vignette and have the internal links work. By uncommenting this line, you are confirming that you accept having this script write jpg and html files locally (besides the knitr output of this file itself).
+# work_dir <- tempdir() # This line is the default to respect CRAN policy that a vignette should not generate local files.
+work_dir <- getwd() # This is what you should use to actually build the vignette and have the internal links work. By uncommenting this line, you are confirming that you accept having this script write jpg and html files locally (besides the knitr output of this file itself).
 ```
 
 # Introduction
@@ -49,6 +58,15 @@ Use of other MCMCs is supported by a plugin system.  Plugins are provided for JA
 
 
 Beware that you might need to call the `compareMCMCs` function as `compareMCMCs::compareMCMCs`.  That's because there is a deprecated `compareMCMCs` function in `nimble`.  Eventually that will be removed from `nimble`. `compareMCMCs` is not backward-compatible with `nimble`'s original features for comparing MCMC methods.
+
+### Working directory for running code
+
+If you want to run the code below yourself, first set the `work_dir` variable using one of the following options. This will be the directory where html and jpg files generated in the exampes below will be placed.
+
+```{r, eval=FALSE}
+work_dir <- tempdir() # use R's temporary directory, or
+# work_dir <- getwd() # use your current working directory
+```
 
 # An example using `nimble`, `jags`, and `stan`.
 
@@ -101,11 +119,13 @@ res <- compareMCMCs(modelInfo,
                       sampling_args = stan_sampling_args))
                     # Stan was not happy with warmup = 100, which would match the others.
 )
-file.remove(work_dir, "toy.stan")
+file.remove(file.path(work_dir, "toy.stan"))
 make_MCMC_comparison_pages(res, dir = work_dir,  modelName = 'example1')
+# Open "example1.html" from a browser, or do
+# browseURL(file.path(work_dir, "example1.html"))   
 ```
 
-Results are [here](example1.html).  In this case, all samplers are so efficient that the comparison between them is not very stable and not meaningful for such a toy model.  On the machine this is being written on, `nimble_slice` is the most efficient MCMC.
+Results (run on one of the author's machines) are [here](example1.html).  In this case, all samplers are so efficient that the comparison between them is not very stable and not meaningful for such a toy model.
 
 # Data vs. constants in nimble vs. JAGS and WinBUGS/OpenBUGS
 
