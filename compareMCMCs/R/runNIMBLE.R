@@ -46,13 +46,85 @@ runNIMBLE <- function(nimbleMCMCs,
     else
       CmcmcFunctionList <- CmcmcFunctionList_temp # lacks test coverage
   })
-  
-  ## Record full set of model states
+
+  results <- runNIMBLE_compiled(Cmodel = Cmodel,
+                                nimbleMCMCs = nimbleMCMCs,
+                                CmcmcFunctionList = CmcmcFunctionList,
+                                MCMCcontrol = MCMCcontrol,
+                                seed = seed,
+                                sessionInfo = sessionInfo,
+                                monitorInfo = monitorInfo,
+                                compile_time = compile_time)
+  results
+
+  ## ## Record full set of model states
+  ## allInitialModelStates <- list()
+  ## allModelVars <- Cmodel$getVarNames(includeLogProb = TRUE)
+  ## for(var in allModelVars)
+  ##   allInitialModelStates[[var]] <- Cmodel[[var]]
+
+  ## results <- list()
+  ## for(iMCMC in seq_along(nimbleMCMCs)) {
+  ##   for(var in allModelVars)
+  ##     Cmodel[[var]] <- allInitialModelStates[[var]]
+  ##   mcmcTag <- nimbleMCMCs[iMCMC]
+  ##   Cmcmc <- CmcmcFunctionList[[mcmcTag]]
+  ##   if(!is.null(seed)) set.seed(as.numeric(seed)) # lacks test coverage
+  ##   if(sessionInfo) sessionInfo_result <- sessionInfo()
+  ##   timeResult <- try(system.time({ Cmcmc$run(MCMCcontrol$niter,
+  ##                                             nburnin = MCMCcontrol$burnin,
+  ##                                             thin = MCMCcontrol$thin) }))
+  ##   if(!inherits(timeResult, 'try-error')) {
+  ##     CmvSamples <- Cmcmc$mvSamples
+  ##     samplesArray <- as.matrix(CmvSamples, varNames = monitorInfo$monitorVars)
+  ##     samplesArray <- samplesArray[, monitorInfo$monitors, drop=FALSE]
+  ##     samplingTime <- timeResult[3]
+  ##     burninTime <- samplingTime * MCMCcontrol$burnin / MCMCcontrol$niter
+  ##     postburninTime <- samplingTime - burninTime
+  ##     results[[mcmcTag]] <-
+  ##       MCMCresult$new(
+  ##         samples = samplesArray,
+  ##         times = list(setup_system.time = compile_time,
+  ##                      sampling_system.time = timeResult,
+  ##                      sampling = samplingTime,
+  ##                      burnin = burninTime,
+  ##                      postburnin = postburninTime,
+  ##                      setup = compile_time[3]),
+  ##         MCMC = mcmcTag)
+  ##     if(sessionInfo) results[[mcmcTag]]$sessionInfo <- sessionInfo_result
+  ##   } else {
+  ##     warning(paste0("There was a problem running ", mcmcTag,".")) # lacks test coverage
+  ##   }
+  ##   ## For compile_time, we could give a message if there are multiple
+  ##   ## nimble MCMCs,
+  ##   ## since their compile_time is bundled together.
+  ## }
+  ## results
+}
+
+## To do: get monitors from the compiled MCMC if possible.
+## Separate out MCMCcontrol default setup (and monitors?)
+## Arrange for runNIMBLE to call compareMCMCs_compiled
+## Decide whether user workflow should go through compareMCMCs
+## or if this function should be user-facing.
+runNIMBLE_compiled <- function(Cmodel,
+                               nimbleMCMCs,
+                               CmcmcFunctionList,
+                               MCMCcontrol,
+                               seed,
+                               sessionInfo = TRUE,
+                               monitorInfo = list(), # not provided if mcmcs were precompiled
+                               compile_time = c(0,0,0)) {
+
+  # one or both of these could be NULL in the case of precompiled MCMCs
+  monitorVars <- monitorInfo[['monitorVars']]
+  monitors <- monitorInfo[['monitors']]
+
   allInitialModelStates <- list()
   allModelVars <- Cmodel$getVarNames(includeLogProb = TRUE)
   for(var in allModelVars)
     allInitialModelStates[[var]] <- Cmodel[[var]]
-  
+
   results <- list()
   for(iMCMC in seq_along(nimbleMCMCs)) {
     for(var in allModelVars)
@@ -61,13 +133,17 @@ runNIMBLE <- function(nimbleMCMCs,
     Cmcmc <- CmcmcFunctionList[[mcmcTag]]
     if(!is.null(seed)) set.seed(as.numeric(seed)) # lacks test coverage
     if(sessionInfo) sessionInfo_result <- sessionInfo()
-    timeResult <- try(system.time({ Cmcmc$run(MCMCcontrol$niter, 
+    timeResult <- try(system.time({ Cmcmc$run(MCMCcontrol$niter,
                                               nburnin = MCMCcontrol$burnin,
                                               thin = MCMCcontrol$thin) }))
     if(!inherits(timeResult, 'try-error')) {
       CmvSamples <- Cmcmc$mvSamples
-      samplesArray <- as.matrix(CmvSamples, varNames = monitorInfo$monitorVars)
-      samplesArray <- samplesArray[, monitorInfo$monitors, drop=FALSE]
+      if(!is.null(monitorVars))
+        samplesArray <- as.matrix(CmvSamples, varNames = monitorVars)
+      else
+        samplesArray <- as.matrix(CmvSamples)
+      if(!is.null(monitors))
+        samplesArray <- samplesArray[, monitors, drop=FALSE]
       samplingTime <- timeResult[3]
       burninTime <- samplingTime * MCMCcontrol$burnin / MCMCcontrol$niter
       postburninTime <- samplingTime - burninTime

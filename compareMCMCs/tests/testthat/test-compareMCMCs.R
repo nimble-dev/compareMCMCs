@@ -1,5 +1,8 @@
 context("Testing compareMCMCs")
 
+# Many of these tests are commented out because they are slow or require
+# external packages or configurations.
+
 ## test_that("compareMCMCs works with one sampled parameter", {
 ##   mc <- nimble::nimbleCode({a ~ dnorm(0,1)})
 ##   res <- compareMCMCs::compareMCMCs(list(code = mc),
@@ -85,7 +88,8 @@ test_that("compareMCMCs works if the model is provided as an argument instead of
 ## })
 
 ## test_that("compareMCMCs works with Stan", {
-## ## This example is taken from the RStan vignette provided in package rstan
+##   ## This example is taken from the RStan vignette provided in package rstan
+##   message("EXPECT ONE VALID ERROR-TRAPPED WARNING MESSAGE IN THIS TEST.")
 ##   sink(file.path(tempdir(), "schools.stan"))
 ##   cat("
 ##   data {
@@ -175,4 +179,21 @@ test_that("compareMCMCs works with custom nimbleMCMCdefs", {
                       needRmodel = TRUE)
   expect_true(length(res) == 3)
   expect_true(all(unlist(lapply(res, function(x) nrow(x$samples) == 1900))))
+})
+
+test_that("compareMCMCs works with precompiled nimble model and MCMC", {
+  modelCode <- nimbleCode({
+    a ~ dunif(0, 100)
+    y ~ dgamma(a, 2)
   })
+  m <- nimbleModel(modelCode,constants = list(y = 2), inits = list(a = 1) )
+  cm <- compileNimble(m)
+  mcmc <- buildMCMC(m)
+  mcmc2 <- buildMCMC(m, onlySlice=TRUE)
+  cmcmcs <- compileNimble(mcmc, mcmc2, project = m)
+  res <- compareMCMCs(modelInfo = list(model = cm),
+                      nimbleMCMCdefs = cmcmcs)
+  expect_true(length(res) == 2)
+  expect_true(identical(names(res), c("mcmc", "mcmc2")))
+  expect_true(all(unlist(lapply(res, function(x) nrow(x$samples) == 8000))))
+})
