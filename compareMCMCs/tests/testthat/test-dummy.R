@@ -15,3 +15,10 @@ test_that("compareMCMCs works", {
               "dummy"))
 }
 )
+
+  res <- compareMCMCs::compareMCMCs(needRmodel = FALSE,
+                                    MCMCs = c('dummy'),
+                                    monitors = paste0("x[", 1:20, "]"),
+                                    MCMCcontrol = list(niter = 2000))
+make_MCMC_comparison_pages(res, modelName = "dummy")
+browseURL(file.path(tempdir(), "dummy.html"))

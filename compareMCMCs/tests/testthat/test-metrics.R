@@ -263,6 +263,16 @@ test_that("various metrics and comparison pages work", {
 }
 )
 
+test_that("byParameter sort order is natural", {
+  paramNames <- paste0("x[", 1:20, "]")
+  res <- compareMCMCs::compareMCMCs(needRmodel = FALSE,
+                                    MCMCs = c('dummy'),
+                                    monitors = paramNames,
+                                    MCMCcontrol = list(niter = 2000))
+  expect_identical(as.character(res$dummy$metrics$byParameter$Parameter),
+                   paramNames)
+})
+
 test_that("combineMetrics control over params and MCMCs works", {
   paramNames <- paste0("x[", 1:20, "]")
   res <- compareMCMCs::compareMCMCs(needRmodel = FALSE,
