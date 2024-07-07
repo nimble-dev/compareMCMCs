@@ -32,4 +32,5 @@ URL: https://github.com/nimble-dev/compareMCMCs
 BugReports: https://github.com/nimble-dev/compareMCMCs/issues
 RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE)
+VignetteBuilder: knitr
 Config/testthat/edition: 3
