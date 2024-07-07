@@ -5,16 +5,20 @@
 \title{Create html output with comparisons of MCMC results}
 \usage{
 make_MCMC_comparison_pages(
-  comparisonResults,
+  results,
   dir = tempdir(),
   pageComponents,
   modelName = "model",
   control,
+  params = NULL,
+  paramFilter = NULL,
+  MCMCs = NULL,
+  MCMCFilter = NULL,
   plot = TRUE
 )
 }
 \arguments{
-\item{comparisonResults}{An list of \code{MCMCresult} objects
+\item{results}{A list of \code{MCMCresult} objects
 such as returned by \code{\link{compareMCMCs}}.}
 
 \item{dir}{A directory in which to place the html file and any
@@ -31,6 +35,24 @@ leaving them out of the list.}
 output.}
 
 \item{control}{A named list of control parameters.}
+
+\item{params}{Character vector of parameter names to include. If \code{NULL},
+all available parameter results will be included.}
+
+\item{paramFilter}{Expression suitable for use in \code{dplyr::filter} to subset
+the parameters to include. The relevant column name is "Parameter". For
+example, \code{paramFilter=Parameter \%in\% c("alpha", "beta")} will include only
+\code{alpha} and \code{beta}. Subsetting parameters by the coarser \code{params} argument
+will be done before subsetting by \code{paramFilter}.}
+
+\item{MCMCs}{Character vector of MCMC names to include. If \code{NULL},
+all available MCMCs will be included.}
+
+\item{MCMCFilter}{Expression suitable for use in \code{dplyr::filter} to subset
+the MCMCs to include. The relevant column name is "MCMC". For example,
+\code{MCMCFilter=MCMC \%in\% c("MCMC1", "MCMC2")} will include only MCMC1 and
+MCMC2. Subsetting parameters by the coarser \code{MCMCs} argument will be
+done before subsetting by \code{MCMCFilter}.}
 
 \item{plot}{\code{TRUE} to generate results, \code{FALSE} not to do so.  Use
 of \code{FALSE} is useful if one wants to use the returned object
@@ -51,4 +73,11 @@ register new page components.
 
 To see built-in page components and their options, use
 \code{as.list(getPageComponents())}.
+
+The arguments \code{params}, \code{paramFilter}, \code{MCMCs}, and
+\code{MCMCFilter} are passed to \code{\link{combineMetrics}}. Both
+\code{paramFilter} and \code{MCMCFilter} are passed as expressions. One can
+call \code{combineMetrics} directly (with \code{results} as the first argument and any
+of these four arguments) to see the results tables that will be used to
+create figures.
 }

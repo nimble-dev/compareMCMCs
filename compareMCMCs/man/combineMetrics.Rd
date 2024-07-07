@@ -4,21 +4,43 @@
 \alias{combineMetrics}
 \title{Combine all metrics from a list of \code{MCMCresult} objects.}
 \usage{
-combineMetrics(results, include_times = FALSE)
+combineMetrics(
+  results,
+  include_times = FALSE,
+  params = NULL,
+  paramFilter = NULL,
+  MCMCs = NULL,
+  MCMCFilter = NULL
+)
 }
 \arguments{
 \item{results}{a list of \code{MCMCresult} objects}
 
 \item{include_times}{if \code{TRUE}, attempt to include timing elements
 in the combination.}
+
+\item{params}{Character vector of parameter names to include. If \code{NULL},
+all available parameter results will be included.}
+
+\item{paramFilter}{Expression suitable for use in \code{dplyr::filter} to subset
+the parameters to include. The relevant column name of the data frame (to
+be passed to \code{filter}) is "Parameter". For example, \code{paramFilter=Parameter \%in\% c("alpha", "beta")} will include only \code{alpha} and \code{beta}. Subsetting
+parameters by the coarser \code{params} argument will be done before subsetting
+by \code{paramFilter}.}
+
+\item{MCMCs}{Character vector of MCMC names to include. If \code{NULL},
+all available MCMCs will be included.}
+
+\item{MCMCFilter}{Expression suitable for use in \code{dplyr::filter} to subset
+the MCMCs to include. The relevant column name is "MCMC". For
+example,\code{MCMCFilter=MCMC \%in\% c("MCMC1", "MCMC2")} Subsetting parameters by
+the coarser \code{MCMCs} argument will be done before subsetting by
+\code{MCMCFilter}.}
 }
 \value{
-A list with elements \code{byParameter} and \code{byMCMC}.  Each
-element combines the corresponding elements for each \code{MCMCresult}
-object in the \code{results} argument.
-
-if \code{include_times} is \code{TRUE}, an element \code{times} will also be in
-the returned list.
+A list with elements \code{byParameter}, \code{byMCMC} and, if
+\code{include_times=TRUE}, \code{times}. Each element combines the corresponding
+elements for each \code{MCMCresult} object in the \code{results} argument.
 }
 \description{
 This is useful for seeing results from multiple MCMC engines compactly.

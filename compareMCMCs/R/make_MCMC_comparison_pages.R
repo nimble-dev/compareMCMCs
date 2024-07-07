@@ -38,7 +38,7 @@ getPageComponents <- function() {
 
 #' Create html output with comparisons of MCMC results
 #' 
-#' @param comparisonResults An list of `MCMCresult` objects 
+#' @param results A list of `MCMCresult` objects
 #' such as returned by \code{\link{compareMCMCs}}.
 #' 
 #' @param dir A directory in which to place the html file and any
@@ -55,7 +55,25 @@ getPageComponents <- function() {
 #'   output.
 #' 
 #' @param control A named list of control parameters.
-#' 
+#'
+#' @param params Character vector of parameter names to include. If \code{NULL},
+#'   all available parameter results will be included.
+#'
+#' @param paramFilter Expression suitable for use in `dplyr::filter` to subset
+#'   the parameters to include. The relevant column name is "Parameter". For
+#'   example, `paramFilter=Parameter %in% c("alpha", "beta")` will include only
+#'   `alpha` and `beta`. Subsetting parameters by the coarser `params` argument
+#'   will be done before subsetting by `paramFilter`.
+#'
+#' @param MCMCs Character vector of MCMC names to include. If \code{NULL},
+#'   all available MCMCs will be included.
+#'
+#' @param MCMCFilter Expression suitable for use in `dplyr::filter` to subset
+#'   the MCMCs to include. The relevant column name is "MCMC". For example,
+#'   `MCMCFilter=MCMC %in% c("MCMC1", "MCMC2")` will include only MCMC1 and
+#'   MCMC2. Subsetting parameters by the coarser \code{MCMCs} argument will be
+#'   done before subsetting by \code{MCMCFilter}.
+#'
 #' @param plot `TRUE` to generate results, `FALSE` not to do so.  Use
 #'   of `FALSE` is useful if one wants to use the returned object
 #'   (including plottable components) in one's own way.
@@ -68,6 +86,13 @@ getPageComponents <- function() {
 #' 
 #' To see built-in page components and their options, use
 #' `as.list(getPageComponents())`.
+#'
+#' The arguments \code{params}, \code{paramFilter}, \code{MCMCs}, and
+#' \code{MCMCFilter} are passed to \code{\link{combineMetrics}}. Both
+#' \code{paramFilter} and \code{MCMCFilter} are passed as expressions. One can
+#' call `combineMetrics` directly (with `results` as the first argument and any
+#' of these four arguments) to see the results tables that will be used to
+#' create figures.
 #' 
 #' @return 
 #' 
@@ -76,15 +101,22 @@ getPageComponents <- function() {
 #' these contain information for text output such as an `xtable` object.
 #' 
 #' @export
-make_MCMC_comparison_pages <- function(comparisonResults,
+make_MCMC_comparison_pages <- function(results,
                                        dir = tempdir(),
                                        pageComponents,
                                        modelName = "model",
                                        control,
+                                       params = NULL,
+                                       paramFilter = NULL,
+                                       MCMCs = NULL,
+                                       MCMCFilter = NULL,
                                        plot = TRUE) {
   ## pageComponents can have standard names with TRUE or FALSE or it
   ## can a list with elements control options include makeTopPage and
   ## mainPageName
+
+  paramFilter = substitute(paramFilter)
+  MCMCFilter = substitute(MCMCFilter)
 
   ## Establish directory and work there.
   curDir <- getwd()
@@ -138,8 +170,20 @@ make_MCMC_comparison_pages <- function(comparisonResults,
     }
   }
 
-  combinedComparisonResults <- combineMetrics(comparisonResults, 
-                                              include_times = TRUE)
+  # This call to combineMetrics is wrapped in eval(substitute(...))
+  # as a cheap way to pass paramFilter and MCMCFilter as expressions.
+  combinedComparisonResults <- eval(substitute(
+    combineMetrics(results,
+                   include_times = TRUE,
+                   params=params,
+                   paramFilter = PF,
+                   MCMCs = MCMCs,
+                   MCMCFilter = MF),
+    list(PF = paramFilter, MF = MCMCFilter)))
+
+  # Here is a hidden egg to return the combineMetrics results in
+  # order to support testing.
+  if(identical(plot, "xyzzy")) return(combinedComparisonResults)
 
     madePageComponents <- list()
     for(j in names(pageComponents)) {
@@ -253,17 +297,17 @@ make_example_html <- function(modelName,
   cat(html,file=paste(modelName,".html",sep=""))
 }
 
-timeComparisonComponent <- function(comparisonResults,
+timeComparisonComponent <- function(results,
                                     control) {
   if(!requireNamespace("xtable"))
     stop("package xtable is required to include time in comparison pages.")
-  times <- comparisonResults$times
+  times <- results$times
   times <- cbind(data.frame(MCMC = row.names(times)), times)
   row.names(times) <- NULL
   list(printable = xtable::xtable(times))
 }
 
-minMeanComparisonComponent <- function(comparisonResults,
+minMeanComparisonComponent <- function(results,
                                        control) {
   if(!requireNamespace('ggplot2', quietly = TRUE))
     stop('Package ggplot2 is required but is not installed.')
@@ -281,7 +325,7 @@ minMeanComparisonComponent <- function(comparisonResults,
   min_efficiency_name <- paste0(control$min_efficiency_name, control$suffix) 
   mean_efficiency_name <- paste0(control$mean_efficiency_name, control$suffix) 
   
-  byMCMC <- comparisonResults$byMCMC
+  byMCMC <- results$byMCMC
   columnsToUse <- c('MCMC',
                     min_efficiency_name,
                     mean_efficiency_name)
@@ -298,7 +342,7 @@ minMeanComparisonComponent <- function(comparisonResults,
                                variable.name = 'type',
                                value.name = 'Efficiency')
 
-##  Efficiency <- comparisonResults$Efficiency
+##  Efficiency <- results$Efficiency
   if(invert) Efficiency$Efficiency <- 1/Efficiency$Efficiency
   if(invert)
     levels(Efficiency$type)[ levels(Efficiency$type) == 'minimum' ] <- 'maximum'
@@ -347,11 +391,11 @@ minMeanComparisonComponent <- function(comparisonResults,
        html_img_args = "height = \"600\" width = \"1000\"")
 }
 
-minMeanAllComparisonComponent <- function(comparisonResults,
+minMeanAllComparisonComponent <- function(results,
                                           control) {
-  part1 <- minMeanComparisonComponent(comparisonResults,
+  part1 <- minMeanComparisonComponent(results,
                                       control)
-  part2 <- allParamEfficiencyComparisonComponent(comparisonResults,
+  part2 <- allParamEfficiencyComparisonComponent(results,
                                                  control)
   list(plottable = list(minMean = part1$plottable,
                         allParams = part2$plottable),
@@ -360,12 +404,12 @@ minMeanAllComparisonComponent <- function(comparisonResults,
        html_img_args = "height = \"600\" width = \"1500\"")
 }
 
-allParamEfficiencyComparisonComponent <- function(comparisonResults,
+allParamEfficiencyComparisonComponent <- function(results,
                                                   control) {
   if(!requireNamespace('ggplot2', quietly = TRUE))
       stop('ggplot2 is required but not installed.')
 
-  vars <- comparisonResults$byParameter
+  vars <- results$byParameter
   if(missing(control)) control <- list()
   defaults <- list(invert = FALSE,
                    efficiency_name = "efficiency",
@@ -411,11 +455,11 @@ allParamEfficiencyComparisonComponent <- function(comparisonResults,
        html_img_args = "height = \"600\" width = \"500\"")
 }
 
-efficiencyDetailsComparisonComponent <- function(comparisonResults,
+efficiencyDetailsComparisonComponent <- function(results,
                                                  control = list()) {
   if(!requireNamespace('ggplot2', quietly = TRUE))
     stop('ggplot2 is required but not installed')
-  df <- comparisonResults$byParameter
+  df <- results$byParameter
   defaults <- list(ncol = 4,
                    efficiency_name = 'efficiency',
                    suffix = '')
@@ -473,13 +517,13 @@ plotMinMeanAll <- function(plottable) {
 }
 
 
-posteriorSummaryComparisonComponent <- function(comparisonResults,
+posteriorSummaryComparisonComponent <- function(results,
                                                 ##modelName,
                                                 control = list(ncol = 4)) {
-  df <- comparisonResults$byParameter
+  df <- results$byParameter
   if(!requireNamespace('ggplot2', quietly = TRUE))
     stop('Package ggplot2 is required but not installed.')
-##  df <- comparisonResults$varSummaries
+##  df <- results$varSummaries
   ncol <- control$ncol
   p<-ggplot2::ggplot(df,
                      ggplot2::aes_string(x = "MCMC", y = "mean")) +

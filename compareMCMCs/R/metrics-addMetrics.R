@@ -109,30 +109,66 @@ addMetrics <- function(results,
 #' @param results a list of `MCMCresult` objects
 #' @param include_times if `TRUE`, attempt to include timing elements
 #'   in the combination.
-#' 
-#' @return A list with elements `byParameter` and `byMCMC`.  Each
-#'   element combines the corresponding elements for each `MCMCresult`
-#'   object in the `results` argument.
 #'
-#' if `include_times` is `TRUE`, an element `times` will also be in
-#' the returned list.
+#' @param params Character vector of parameter names to include. If \code{NULL},
+#'   all available parameter results will be included.
+#'
+#' @param paramFilter Expression suitable for use in `dplyr::filter` to subset
+#'   the parameters to include. The relevant column name of the data frame (to
+#'   be passed to `filter`) is "Parameter". For example, `paramFilter=Parameter
+#'   %in% c("alpha", "beta")` will include only `alpha` and `beta`. Subsetting
+#'   parameters by the coarser `params` argument will be done before subsetting
+#'   by `paramFilter`.
+#'
+#' @param MCMCs Character vector of MCMC names to include. If \code{NULL},
+#'   all available MCMCs will be included.
+#'
+#' @param MCMCFilter Expression suitable for use in `dplyr::filter` to subset
+#'   the MCMCs to include. The relevant column name is "MCMC". For
+#'   example,`MCMCFilter=MCMC %in% c("MCMC1", "MCMC2")` Subsetting parameters by
+#'   the coarser \code{MCMCs} argument will be done before subsetting by
+#'   \code{MCMCFilter}.
+#'
+#' @return A list with elements `byParameter`, `byMCMC` and, if
+#'   `include_times=TRUE`, `times`. Each element combines the corresponding
+#'   elements for each `MCMCresult` object in the `results` argument.
 #'
 #' @seealso \link{modifyMetrics}
 #'
+#' @importFrom dplyr filter
+#'
 #' @export
-combineMetrics <- function(results, include_times = FALSE) {
+combineMetrics <- function(results, include_times = FALSE,
+                           params=NULL, paramFilter=NULL,
+                           MCMCs=NULL, MCMCFilter=NULL) {
   byParameter <-  do.call('rbind',
                           c(lapply(results,
                                    function(x)
                                      x$metrics$byParameter),
                             list(make.row.names = FALSE))
-  )
+                          )
+  paramFilter <- substitute(paramFilter)
+  MCMCFilter <- substitute(MCMCFilter)
+  if(!is.null(params))
+    byParameter <- byParameter |> dplyr::filter(Parameter %in% params)
+  if(!is.null(paramFilter))
+    eval(substitute(byParameter <- byParameter |> dplyr::filter(PF), list(PF=paramFilter)))
+  if(!is.null(MCMCs))
+    byParameter <- byParameter |> dplyr::filter(MCMC %in% MCMCs)
+  if(!is.null(MCMCFilter))
+    eval(substitute(byParameter <- byParameter |> dplyr::filter(MF), list(MF=MCMCFilter)))
+
   byMCMC <- do.call('rbind',
                       c(lapply(results,
                                function(x)
                                  x$metrics$byMCMC),
                         list(make.row.names = FALSE))
-                      )
+                    )
+  if(!is.null(MCMCs))
+    byMCMC <- byMCMC |> dplyr::filter(MCMC %in% MCMCs)
+  if(!is.null(MCMCFilter))
+    eval(substitute(byMCMC <- byMCMC |> dplyr::filter(MF), list(MF=MCMCFilter)))
+
   if(include_times) {
     Null2NA <- function(x) if(is.null(x)) NA else x
     times <- do.call('rbind',
@@ -144,6 +180,16 @@ combineMetrics <- function(results, include_times = FALSE) {
                               }))
                      )
     colnames(times) <- c("burnin", "post-burnin", "total sampling")
+    if(!is.null(MCMCs) || !is.null(MCMCFilter)) {
+      timesdf <- as.data.frame(times)
+      timesdf$MCMC <- row.names(times)
+      if(!is.null(MCMCs))
+        timesdf <- timesdf |> dplyr::filter(MCMC %in% MCMCs)
+      if(!is.null(MCMCFilter))
+        eval(substitute(timesdf <- timesdf |> dplyr::filter(MF), list(MF=MCMCFilter)))
+      timesdf$MCMC <- NULL
+      times <- as.matrix(timesdf)
+    }
   }
   ans <- list(byParameter = byParameter,
               byMCMC = byMCMC)

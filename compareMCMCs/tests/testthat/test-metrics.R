@@ -262,3 +262,84 @@ test_that("various metrics and comparison pages work", {
   expect_true("test model4_paceSummaryAll.jpg" %in% list.files(tempdir()))
 }
 )
+
+test_that("combineMetrics control over params and MCMCs works", {
+  paramNames <- paste0("x[", 1:20, "]")
+  res <- compareMCMCs::compareMCMCs(needRmodel = FALSE,
+                                    MCMCs = c('dummy'),
+                                    monitors = paramNames,
+                                    MCMCcontrol = list(niter = 2000))
+
+  res2 <- compareMCMCs::compareMCMCs(needRmodel = FALSE,
+                                    MCMCs = c('dummy'),
+                                    monitors = paramNames,
+                                    MCMCcontrol = list(niter = 2000))
+  res2 <- renameMCMC(res2, "dummy2", "dummy")
+
+  res3 <- compareMCMCs::compareMCMCs(needRmodel = FALSE,
+                                    MCMCs = c('dummy'),
+                                    monitors = paramNames,
+                                    MCMCcontrol = list(niter = 2000))
+  res3 <- renameMCMC(res3, "dummy3", "dummy")
+
+  # The "plot='xyzzy'" is a hidden egg to support this testing by
+  # returning the result of combineMetrics inside make_MCMC_comparison_pages.
+  # The reason to test this is that the Filter arguments are hand-propagated
+  # as expressions.
+
+  both <- c(res, res2, res3)
+  f1 <- combineMetrics(both, params = c("x[1]", "x[13]"), include_times=TRUE)
+  expect_true(all(as.character(f1$byParameter$Parameter) %in% c("x[1]", "x[13]")))
+  f1b <- make_MCMC_comparison_pages(both, params = c("x[1]", "x[13]"), plot="xyzzy")
+  expect_identical(f1, f1b)
+
+  f2 <- combineMetrics(both, paramFilter = Parameter %in% c("x[1]", "x[13]"),
+                       include_times=TRUE)
+  expect_true(all(as.character(f2$byParameter$Parameter) %in% c("x[1]", "x[13]")))
+  f2b <- make_MCMC_comparison_pages(both,
+                                    paramFilter = Parameter %in% c("x[1]", "x[13]"),
+                                    plot = "xyzzy")
+  expect_identical(f2, f2b)
+
+  f3 <- combineMetrics(both,
+                       params = paramNames[1:10],
+                       paramFilter = grepl("1", Parameter),
+                       include_times=TRUE)
+  expect_true(all(as.character(f3$byParameter$Parameter) %in% c("x[1]", "x[10]")))
+  f3b <- make_MCMC_comparison_pages(both,
+                                    params = paramNames[1:10],
+                                    paramFilter = grepl("1", Parameter),
+                                    plot = "xyzzy")
+  expect_identical(f3, f3b)
+
+  f4 <- combineMetrics(both, MCMCs = c("dummy2", "dummy"), include_times=TRUE)
+  expect_true(all(rownames(f4$times) %in% c("dummy", "dummy2")))
+  expect_true(all(as.character(f4$byMCMC$MCMC) %in% c("dummy", "dummy2")))
+  expect_true(all(as.character(f4$byParameter$MCMC) %in% c("dummy", "dummy2")))
+  f4b <- make_MCMC_comparison_pages(both,
+                                    MCMCs = c("dummy2", "dummy"),
+                                    plot = "xyzzy")
+  expect_identical(f4, f4b)
+
+  f5 <- combineMetrics(both, MCMCFilter = MCMC %in% c("dummy2", "dummy"),
+                       include_times=TRUE)
+  expect_true(all(rownames(f5$times) %in% c("dummy", "dummy2")))
+  expect_true(all(as.character(f5$byMCMC$MCMC) %in% c("dummy", "dummy2")))
+  expect_true(all(as.character(f5$byParameter$MCMC) %in% c("dummy", "dummy2")))
+  f5b <- make_MCMC_comparison_pages(both,
+                                    MCMCFilter = MCMC %in% c("dummy2", "dummy"),
+                                    plot = "xyzzy")
+  expect_identical(f5, f5b)
+
+  f6 <- combineMetrics(both, MCMCs = c("dummy", "dummy3"),
+                       MCMCFilter = MCMC %in% c("dummy"),
+                       include_times=TRUE)
+  expect_true(all(rownames(f6$times) %in% c("dummy")))
+  expect_true(all(as.character(f6$byMCMC$MCMC) %in% c("dummy")))
+  expect_true(all(as.character(f6$byParameter$MCMC) %in% c("dummy")))
+  f6b <- make_MCMC_comparison_pages(both,
+                                    MCMCs = c("dummy2", "dummy"),
+                                    MCMCFilter = MCMC %in% c("dummy"),
+                                    plot = "xyzzy")
+  expect_identical(f6, f6b)
+})
