@@ -13,11 +13,11 @@ vignette: >
 
 # Introduction
 
-`compareMCMCs` is a package for running, managing, and comparing results from different MCMC packages.  You can configure a set of MCMCs to run, have them automatically timed, and then generate html output with comparisons of efficiency and posterior distributions.  Throughout this document, we use "MCMC" as a short-hand for an MCMC kernel or the samples it generates.
+`compareMCMCs` is a package for running, managing, and comparing results from different MCMC packages. You can configure a set of MCMCs to run, have them automatically timed, and then generate html output with comparisons of efficiency and posterior distributions. Throughout this document, we use "MCMC" as a short-hand for an MCMC kernel or the samples it generates.
 
-This system started life as part of the `nimble` package.  Although it remains somewhat nimble-centric, it is entirely possible to use it without nimble involved.  The system is highly configurable, allowing use of other MCMC systems and generation of other output metrics and graphical summaries fairly easily.
+This system started life as part of the `nimble` package. Although it remains somewhat nimble-centric, it is entirely possible to use it without nimble involved. The system is highly configurable, allowing use of other MCMC systems and generation of other output metrics and graphical summaries fairly easily.
 
-Use of other MCMCs is supported by a plugin system.  Plugins are provided for JAGS and Stan.  Draft plugins for WinBUGS and OpenBUGS are provided but need testing.  Since nimble, JAGS, WinBUGS and OpenBUGS use different dialects of the same model language, it is sometimes possible to compare them using the same model code. It is possible to write new plugins to call other MCMC packages fairly easily. 
+Use of other MCMCs is supported by a plugin system. Plugins are provided for JAGS and Stan. Draft plugins for WinBUGS and OpenBUGS are provided but need testing. Since nimble, JAGS, WinBUGS and OpenBUGS use different dialects of the same model language, it is sometimes possible to compare them using the same model code. It is possible to write new plugins to call other MCMC packages fairly easily. 
 
 `compareMCMCs` provides:
 
@@ -28,25 +28,22 @@ Use of other MCMCs is supported by a plugin system.  Plugins are provided for JA
 - a system for applying parameter conversions, in case difference MCMCs use different parameterizations and/or parameter names;
 - a system for generating html pages with figures from comparison metrics, including a plugin system to provide new page components;
 
-
-Beware that you might need to call the `compareMCMCs` function as `compareMCMCs::compareMCMCs`.  That's because there is a deprecated `compareMCMCs` function in `nimble`.  Eventually that will be removed from `nimble`. `compareMCMCs` is not backward-compatible with `nimble`'s original features for comparing MCMC methods.
-
 ### Working directory for running code
 
 If you want to run the code below yourself, first set the `work_dir` variable using one of the following options. This will be the directory where html and jpg files generated in the exampes below will be placed.
 
 
-```r
+``` r
 work_dir <- tempdir() # use R's temporary directory, or
 # work_dir <- getwd() # use your current working directory
 ```
 
 # An example using `nimble`, `jags`, and `stan`.
 
-Let's say you want to compare the performance of adaptive random-walk Metropolis-Hastings sampling with nimble (its default sampler in this case), slice sampling with nimble, JAGS (which will also use slice sampling in this case), and Stan.  We'll use a toy model with only one observation following a gamma distribution, known rate parameter, and unknown shape parameter with a uniform prior distribution. The following code accomplishes this:
+Let's say you want to compare the performance of adaptive random-walk Metropolis-Hastings sampling with nimble (its default sampler in this case), slice sampling with nimble, JAGS (which will also use slice sampling in this case), and Stan. We'll use a toy model with only one observation following a gamma distribution, known rate parameter, and unknown shape parameter with a uniform prior distribution. The following code accomplishes this:
 
 
-```r
+``` r
 # This model code will be used for both nimble and JAGS
 modelCode <- nimbleCode({
   a ~ dunif(0, 100)
@@ -70,8 +67,8 @@ stan_code <- c("data {real y;}",
 # If you want to change it, modify the first code chunk of the R markdown source.
 writeLines(stan_code, file.path(work_dir, "toy.stan"))
 # An alternative way to provide the Stan model is to make a
-# list entered below as stan_model_args (similar to how sampling_args
-# appears in the externalMCMCinfo list).  The elements of stan_model_args
+# list entered below as stan_model_args (similar to how stan_sampling_args
+# appears in the externalMCMCinfo list). The elements of stan_model_args
 # (e.g. 'file' or 'model_code') will be passed to the 'stan_model` function.
 stan_sampling_args <- list(data = list(y=2),
                            init = list(list(a=1)), # Only one chain will be run
@@ -109,8 +106,8 @@ res <- compareMCMCs(modelInfo,
 #> 
 #> SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 1).
 #> Chain 1: 
-#> Chain 1: Gradient evaluation took 8e-06 seconds
-#> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.08 seconds.
+#> Chain 1: Gradient evaluation took 6e-06 seconds
+#> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.06 seconds.
 #> Chain 1: Adjust your expectations accordingly!
 #> Chain 1: 
 #> Chain 1: 
@@ -127,11 +124,11 @@ res <- compareMCMCs(modelInfo,
 #> Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 #> Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 #> Chain 1: 
-#> Chain 1:  Elapsed Time: 0.027 seconds (Warm-up)
-#> Chain 1:                0.064 seconds (Sampling)
-#> Chain 1:                0.091 seconds (Total)
+#> Chain 1:  Elapsed Time: 0.043 seconds (Warm-up)
+#> Chain 1:                0.039 seconds (Sampling)
+#> Chain 1:                0.082 seconds (Total)
 #> Chain 1:
-#> Warning: There were 37 divergent transitions after warmup. See
+#> Warning: There were 21 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them.
 #> Warning: Examine the pairs() plot to diagnose sampling problems
@@ -151,57 +148,69 @@ res <- compareMCMCs(modelInfo,
 #> |-------------------------------------------------------|
 file.remove(file.path(work_dir, "toy.stan"))
 #> [1] TRUE
-make_MCMC_comparison_pages(res, dir = work_dir,  modelName = 'example1')
+make_MCMC_comparison_pages(res, dir = work_dir, modelName = 'example1',
+                           control = list(res = 75))
 # Open "example1.html" from a browser, or do
 # browseURL(file.path(work_dir, "example1.html"))   
 ```
 
-Results (run on one of the author's machines) are [here](example1.html).  In this case, all samplers are so efficient that the comparison between them is not very stable and not meaningful for such a toy model.
+Results (run on one of the author's machines) are [here](example1.html). In this case, all samplers are so efficient that the comparison between them is not very stable and not meaningful for such a toy model.
+
+Default `res` (passed to function `jpeg`) is 300 but is reduced here to reduce the size of this vignette.
+
+If one wants to get hold of the figures used in the html output, they are returned as a list of `ggplot` objects (using package `ggplot2`) from `make_MCMC_comparison_pages`.
 
 # Data vs. constants in nimble vs. JAGS and WinBUGS/OpenBUGS
 
-When using the same model code for nimble and any of JAGS, WinBUGS or OpenBUGS, it is important to note that nimble makes a distinction between "data" and "constants", which the other packages group together as "data".  In nimble, constants are values necessary to define a model, such as "N" in "for(i in 1:N)", while data are observed scientific data.  Since nimble models are objects that can be manipulated, it is possible to change data values, although that won't happen just from MCMC sampling.
+When using the same model code for nimble and any of JAGS, WinBUGS or OpenBUGS, it is important to note that nimble makes a distinction between "data" and "constants", which the other packages group together as "data". In nimble, constants are values necessary to define a model, such as "N" in "for(i in 1:N)", while data are observed scientific data. Since nimble models are objects that can be manipulated, it is possible to change data values, although that won't happen just from MCMC sampling.
 
-When both data and constants are provided as "constants" to nimble, it attempts to determine which values should be treated as data.  Correspondingly, the constants will be passed to the other packages as data.  Therefore, it is advisable to provide both data and constants as "constants" when using both nimble and JAGS, WinBUGS or OpenBUGS.  See the NIMBLE User Manual (https://r-nimble.org) for more information about data and constants in nimble.
+When both data and constants are provided as "constants" to nimble, it attempts to determine which values should be treated as data. Correspondingly, the constants will be passed to the other packages as data. Therefore, it is advisable to provide both data and constants as "constants" when using both nimble and JAGS, WinBUGS or OpenBUGS. See the NIMBLE User Manual (https://r-nimble.org) for more information about data and constants in nimble.
 
 # MCMC efficiency and pace
 
-**MCMC efficiency** for a parameter is defined as the effective sample size divided by computation time (in seconds).  It is the number of effectively independent samples generated per second.  
+**MCMC efficiency** for a parameter is defined as the effective sample size divided by computation time (in seconds). It is the number of effectively independent samples generated per second.
 
-**MCMC pace** is defined as the inverse of MCMC efficiency.  It is the time (in seconds) required to generate one effectively independent sample.
+**MCMC pace** is defined as the inverse of MCMC efficiency. It is the time (in seconds) required to generate one effectively independent sample.
 
 ## What is timed
 
-For both of these metrics, one may take interest in different components of computation time.  `compareMCMCs` records time in three components: setup time, burnin time ("warmup" in Stan), and post-burnin time.  The samples that are saved for analysis are the post-burnin samples.  A fourth time, sampling time, is defined as the sum of burnin and post-burnin times.  Setup time includes any steps prior to sampling.  It is possible to control which time is used for calculating MCMC efficiency and pace.  The default is sampling time. This focuses on comparisons once algorithms are up and running.
+For both of these metrics, one may take interest in different components of computation time. `compareMCMCs` records time in three components: setup time, burnin time ("warmup" in Stan), and post-burnin time. The samples that are saved for analysis are the post-burnin samples. A fourth time, sampling time, is defined as the sum of burnin and post-burnin times. Setup time includes any steps prior to sampling. It is possible to control which time is used for calculating MCMC efficiency and pace. The default is sampling time. This focuses on comparisons once algorithms are up and running.
 
 # New MCMC configurations in nimble
 
-NIMBLE provides the capability to customize an MCMC configuration by choosing samplers, writing new samplers, and arranging sampler order.  To have `compareMCMCs` use a custom configuration, the steps are:
+NIMBLE provides the capability to customize an MCMC configuration by choosing samplers, writing new samplers, and arranging sampler order. To have `compareMCMCs` use a custom configuration, the steps are:
 
-1. Choose a name for the configuration, such as "nimble_slice" above. Include that name in the `MCMCs` argument.  Some names are pre-defined, such as "nimble" and "jags".  (Actually, "nimble_slice" is provided as a pre-defined configuration.  We have just used it as an example.)
-2. Provide an element in the `nimbleMCMCdefs` list with the same name as entered in `MCMCs` (e.g., "nimble_slice").  That element can take one of three formats:
+1. Choose a name for the configuration, such as "nimble_slice" above. Include that name in the `MCMCs` argument. Some names are pre-defined, such as "nimble" and "jags". (Actually, "nimble_slice" is provided as a pre-defined configuration. We have just used it as an example.)
+2. Provide an element in the `nimbleMCMCdefs` list with the same name as entered in `MCMCs` (e.g., "nimble_slice"). That element can take one of three formats:
     i. A function, which should take a nimble model as its first and only argument and return an MCMC configuration (e.g., what is returned by `configureMCMC`, possibly modified using its `addSampler` and `removeSamplers` methods).
     ii. The character *name* of a function as described in (i).
-    iii. An R code object such as that created by `quote`.  This can assume there is an object called `model` that is a nimble model.  It should return an MCMC configuration.  An example that would work above is `nimbleMCMCdefs = list(nimble_slice = quote({configureMCMC(model, onlySlice = TRUE)}))`.  The curly braces can contain as many lines of code as needed, separated by semi-colons.
+    iii. An R code object such as that created by `quote`. This can assume there is an object called `model` that is a nimble model. It should return an MCMC configuration. An example that would work above is `nimbleMCMCdefs = list(nimble_slice = quote({configureMCMC(model, onlySlice = TRUE)}))`. The curly braces can contain as many lines of code as needed, separated by semi-colons.
+
+So far, we have assumed the inputs to `compareMCMCs` to be used by `nimble` are the ingredients from which `compareMCMCs` will build a nimble model and any MCMCs, compile them all, and run the compiled MCMCs. It is also possible to build the model yourself (using `nimbleModel`) and provide that (named "model") in the `modelInfo` list. 
+
+Furthermore, it is possible to compile the model yourself and provide the compiled version as "model" in the `modelInfo` list. In that case, you must also compile any MCMCs yourself and provide them in the `nimbleMCMCdefs` list. The steps to do this (modified from above) are:
+
+1. Choose a name for the configuration, as described above.
+2. Provide an element in the `nimbleMCMCdefs` list with the same name as entered in `MCMCs`. That element should be the compiled MCMC object, such as returned by `compileNimble(MCMC, project = model)` where `MCMC` is the result of `buildMCMC`, `model` is the result of `nimbleModel`, and a compiled version of `model` has already been created.
 
 ### Pre-defined configurations
 
 The package comes with the following configurations, which are similar to options in nimble's `configureMCMC` function.
 
 * "nimble_slice" : Use only slice sampling where possible.
-* "nimble_noConj": Do not use conjugate (Gibbs) samplers even where they are valid.  Instead use adaptive random-walk Metropolis-Hastings samplers.
+* "nimble_noConj": Do not use conjugate (Gibbs) samplers even where they are valid. Instead use adaptive random-walk Metropolis-Hastings samplers.
 * "nimble_RW": Use only adaptive random-walk Metropolis-Hastings samplers.
 
 # Combining results from different calls to `compareMCMCs`.
 
-Results are stored as a list of `MCMCresult` objects, so it is possible to simply concatenate lists to combine results.  This makes it possible to run and save results separately and combine them later for comparison purposes.
+Results are stored as a list of `MCMCresult` objects, so it is possible to simply concatenate lists to combine results. This makes it possible to run and save results separately and combine them later for comparison purposes.
 
 For example, the above example (omitting Stan for simplicity) could be created as follows:
 
 
 
 
-```r
+``` r
 res_jags <- compareMCMCs(modelInfo,
                 MCMCs = c('jags'),
                 MCMCcontrol = list(inits = list(a = 1),
@@ -265,54 +274,55 @@ res_nimble <- compareMCMCs(modelInfo,
 #> |-------------|-------------|-------------|-------------|
 #> |-------------------------------------------------------|
 res <- c(res_jags, res_nimble)
-make_MCMC_comparison_pages(res, dir = work_dir, modelName = 'example2')
+make_MCMC_comparison_pages(res, dir = work_dir, modelName = 'example2',
+                           control = list(res = 75))
 ```
 
 Results are [here](example2.html). 
 
 # Writing new comparison metrics.
 
-The result of `compareMCMCs` is a list of `MCMCresult` objects.  In addition to the `samples` (MCMC output), each `MCMCresult` has elements for `times` and `metrics`.  The `metrics` is a list of metrics organized by their relationship to model parameters.  Metrics that have a single value for each MCMC sample are stored in the `byMCMC` element of `metrics`.  Metrics that have a value for each parameter in each MCMC sample are stored in the `byParameter` element of `metrics`.  Finally, there is an `other` element of `metrics` that is a list available for storing any arbitrary kinds of metrics (or any kind of information really) for each MCMC.
+The result of `compareMCMCs` is a list of `MCMCresult` objects. In addition to the `samples` (MCMC output), each `MCMCresult` has elements for `times` and `metrics`. The `metrics` is a list of metrics organized by their relationship to model parameters. Metrics that have a single value for each MCMC sample are stored in the `byMCMC` element of `metrics`. Metrics that have a value for each parameter in each MCMC sample are stored in the `byParameter` element of `metrics`. Finally, there is an `other` element of `metrics` that is a list available for storing any arbitrary kinds of metrics (or any kind of information really) for each MCMC.
 
 For example, here are the metrics of the result for nimble with default samplers above:
 
-```r
+``` r
 res$nimble$metrics
 #> $byMCMC
 #>     MCMC min_efficiency mean_efficiency
-#> 1 nimble       387675.5        387675.5
+#> 1 nimble       272711.2        272711.2
 #> 
 #> $byParameter
-#>     MCMC Parameter     mean   median      sd CI95_low CI95_upp     ESS
-#> 1 nimble         a 5.060889 4.899542 2.12018 1.442981 9.586273 775.351
+#>     MCMC Parameter     mean   median       sd CI95_low CI95_upp      ESS
+#> 1 nimble         a 5.024547 4.725302 2.012188 1.704897  9.65107 818.1337
 #>   efficiency
-#> 1   387675.5
+#> 1   272711.2
 #> 
 #> $other
 #> list()
 ```
 
-A new comparison metric can be provided as a function.  It takes as input a `MCMCresult` object and returns a list with elements named `byMCMC`, `byParameter`, and/or `other`.  A result in `byParameter` should be a list whose names are metric names.  Each list element should be a named vector with names corresponding to parameters.
+A new comparison metric can be provided as a function. It takes as input a `MCMCresult` object and returns a list with elements named `byMCMC`, `byParameter`, and/or `other`. A result in `byParameter` should be a list whose names are metric names. Each list element should be a named vector with names corresponding to parameters.
 
 For example, the metric function for median looks like this:
 
-```r
+``` r
 MCMCmetric_median <- function(result, ...) {
   res <- apply(result$samples, 2, median)
   list(byParameter = list(median = res))
 }
 ```
-When this is called by other functions, the argument `result` will be the object returned from `combineMetrics`, such as `combineMetrics(res)` (see below for an example).  When called from `addMetrics` or `compareMCMCs`, the corresponding element of their `options` or `metricOptions` arguments, respectively, will be passed as the `options` argument to this function.
+When this is called by other functions, the argument `result` will be the object returned from `combineMetrics`, such as `combineMetrics(res)` (see below for an example). When called from `addMetrics` or `compareMCMCs`, the corresponding element of their `options` or `metricOptions` arguments, respectively, will be passed as the `options` argument to this function.
 
 There are two ways metrics can be used:
 
 1. By calling `addMetrics` with a list of metrics, which can be functions or registered metric names.
 2. By registering each metric with a name and including those names in the `metrics` argument to `compareMCMCs`.
 
-Let's look at an example of each.  Say we want to make a metric that calculates the 25th and 75th percentiles (i.e. the quartiles) for each parameter and also records the maximum difference between these percentiles across all parameters.  We would do so as follows:
+Let's look at an example of each. Say we want to make a metric that calculates the 25th and 75th percentiles (i.e. the quartiles) for each parameter and also records the maximum difference between these percentiles across all parameters. We would do so as follows:
 
 
-```r
+``` r
 MCMCmetric_quartiles <- function(result, options) {
   p25 <- apply(result$samples, 2, quantile, probs = 0.25)
   p75 <- apply(result$samples, 2, quantile, probs = 0.75)
@@ -325,23 +335,23 @@ MCMCmetric_quartiles <- function(result, options) {
 }
 ```
 
-Note that familiarity with the contents of a `MCMCresults` object is needed to provide a new metric.  Often it is sufficient to know that its `samples` field contains the matrix of samples.
+Note that familiarity with the contents of a `MCMCresults` object is needed to provide a new metric. Often it is sufficient to know that its `samples` field contains the matrix of samples.
 
 We can now add the metric to the set of stored metric results from our previous results:
 
 
-```r
+``` r
 addMetrics(res, list(MCMCmetric_quartiles))
 res$nimble$metrics
 #> $byMCMC
 #>     MCMC min_efficiency mean_efficiency maxQuartileDiff
-#> 1 nimble       387675.5        387675.5        2.940265
+#> 1 nimble       272711.2        272711.2         2.44791
 #> 
 #> $byParameter
-#>     MCMC Parameter     mean   median      sd CI95_low CI95_upp     ESS
-#> 1 nimble         a 5.060889 4.899542 2.12018 1.442981 9.586273 775.351
+#>     MCMC Parameter     mean   median       sd CI95_low CI95_upp      ESS
+#> 1 nimble         a 5.024547 4.725302 2.012188 1.704897  9.65107 818.1337
 #>   efficiency      p25      p75
-#> 1   387675.5 3.486944 6.427208
+#> 1   272711.2 3.694202 6.142112
 #> 
 #> $other
 #> list()
@@ -349,28 +359,28 @@ res$nimble$metrics
 
 To register a metric so that it can be called by name, use
 
-```r
+``` r
 registerMetrics(
   list(quartiles = MCMCmetric_quartiles)
 )
-#> <environment: 0x7fef491c0b70>
+#> <environment: 0x7fc281290ce8>
 ```
 
 Now the name "quartiles" can be included in the `metrics` argument to `compareMCMCs` or `addMetrics`, and the registered `MCMCmetric_quartiles` will be called.
 
 # Converting parameters to match each other across different MCMCs
 
-Sometimes different MCMCs for essentially the same model use different parameter names and/or parameterizations.  For example, a common difference in parameterization occurs for the variance of a normal distribution, which might be parameterized as variance, standard deviation, log standard deviation, precision, log precision, and so on.  compareMCMCs provides a system to support converting parameters to make them comparable across MCMCs.  Like metrics, conversions can be applied as part of `compareMCMCs` or outside of `compareMCMCs`.  When included in `compareMCMCs`, they are applied *before* metrics are calculated.
+Sometimes different MCMCs for essentially the same model use different parameter names and/or parameterizations. For example, a common difference in parameterization occurs for the variance of a normal distribution, which might be parameterized as variance, standard deviation, log standard deviation, precision, log precision, and so on. compareMCMCs provides a system to support converting parameters to make them comparable across MCMCs. Like metrics, conversions can be applied as part of `compareMCMCs` or outside of `compareMCMCs`. When included in `compareMCMCs`, they are applied *before* metrics are calculated.
 
 ## Example
 
-To continue using the toy example above, let us say that one wants to use `log(a)` for comparisons, and make that conversion for all MCMCs.  Typically one would need different conversions for different MCMCs, but in this case we will apply the same conversion to all.
+To continue using the toy example above, let us say that one wants to use `log(a)` for comparisons, and make that conversion for all MCMCs. Typically one would need different conversions for different MCMCs, but in this case we will apply the same conversion to all.
 
 To make this conversion as part of `compareMCMCs`, we would do the following.
 
 
-```r
-reparam <- list(log_a  = "log(`a`)", a = NULL)
+``` r
+reparam <- list(log_a = "log(`a`)", a = NULL)
 conversions <- list(nimble = reparam,
                     nimble_slice = reparam,
                     jags = reparam)
@@ -429,30 +439,30 @@ res <- compareMCMCs(modelInfo,
 combineMetrics(res)
 #> $byParameter
 #>           MCMC Parameter     mean   median        sd  CI95_low CI95_upp
-#> 1         jags     log_a 1.524983 1.577903 0.4450360 0.4927061 2.245681
-#> 2       nimble     log_a 1.527910 1.576066 0.4438445 0.5165181 2.235235
-#> 3 nimble_slice     log_a 1.508288 1.578324 0.4690385 0.4303539 2.235334
+#> 1         jags     log_a 1.525154 1.574682 0.4460515 0.5144139 2.234667
+#> 2       nimble     log_a 1.506104 1.552619 0.4402313 0.5208743 2.200393
+#> 3 nimble_slice     log_a 1.523469 1.597308 0.4624378 0.3867174 2.231395
 #>         ESS efficiency
-#> 1 1081.1740   108117.4
-#> 2  464.5451   464545.1
-#> 3 2171.9133   542978.3
+#> 1 1242.8499   112986.4
+#> 2  438.5948   438594.8
+#> 3 1900.0000   475000.0
 #> 
 #> $byMCMC
 #>           MCMC min_efficiency mean_efficiency
-#> 1         jags       108117.4        108117.4
-#> 2       nimble       464545.1        464545.1
-#> 3 nimble_slice       542978.3        542978.3
+#> 1         jags       112986.4        112986.4
+#> 2       nimble       438594.8        438594.8
+#> 3 nimble_slice       475000.0        475000.0
 ```
 
 We can see that the parameter is now `log_a` rather than `a`. The use of backticks in "``log(`a`)``" ensures that `a` is evaluated as a variable and is described more below.
 
 ## Converting parameters outside of `compareMCMCs`
 
-Say we have run `compareMCMCs` and only later realized we need to convert parameters.  For an example, say we want to reverse the conversion to `log_a` done above.  We can do that as follows.  *Notice that we need to re-compute metrics after applying the conversions, and we must clear the old metrics before re-computing them.*
+Say we have run `compareMCMCs` and only later realized we need to convert parameters. For an example, say we want to reverse the conversion to `log_a` done above. We can do that as follows. *Notice that we need to re-compute metrics after applying the conversions, and we must clear the old metrics before re-computing them.*
 
 
-```r
-reparam <- list(a  = "exp(`log_a`)", log_a = NULL)
+``` r
+reparam <- list(a = "exp(`log_a`)", log_a = NULL)
 conversions <- list(nimble = reparam,
                     nimble_slice = reparam,
                     jags = reparam)
@@ -468,7 +478,7 @@ applyConversions(res, conversions)
 #>     MCMC: jags
 #>     metrics: list
 #>     rename: function (newName, oldName) 
-#>     samples: 9.31211630991968 8.25493170955207 3.28595295951126 5.754 ...
+#>     samples: 5.11914352478718 4.59166700986035 4.49223799722782 1.967 ...
 #>     sessionInfo: sessionInfo
 #>     setSamples: function (samples) 
 #>     times: list
@@ -484,7 +494,7 @@ applyConversions(res, conversions)
 #>     MCMC: nimble
 #>     metrics: list
 #>     rename: function (newName, oldName) 
-#>     samples: 6.31543155398573 6.31543155398573 5.74064065041648 4.526 ...
+#>     samples: 5.60010966082851 5.60010966082851 5.25478000597844 7.002 ...
 #>     sessionInfo: sessionInfo
 #>     setSamples: function (samples) 
 #>     times: list
@@ -500,7 +510,7 @@ applyConversions(res, conversions)
 #>     MCMC: nimble_slice
 #>     metrics: list
 #>     rename: function (newName, oldName) 
-#>     samples: 8.03121474423958 9.69438666143967 7.92048408641992 1.624 ...
+#>     samples: 4.34136621026928 5.06519566198486 5.90733233049187 3.117 ...
 #>     sessionInfo: sessionInfo
 #>     setSamples: function (samples) 
 #>     times: list
@@ -509,48 +519,48 @@ addMetrics(res) # use default metrics
 combineMetrics(res) # An easy way to see that it worked
 #> $byParameter
 #>           MCMC Parameter     mean   median       sd CI95_low CI95_upp       ESS
-#> 1         jags         a 5.016812 4.844788 1.975016 1.636743 9.446858  981.5543
-#> 2       nimble         a 5.026045 4.835894 1.954984 1.676182 9.348682  402.2569
-#> 3 nimble_slice         a 4.969071 4.846824 2.009493 1.537803 9.349607 1900.0000
+#> 1         jags         a 5.017371 4.829206 1.984103 1.672658 9.343369  985.7875
+#> 2       nimble         a 4.928662 4.723824 1.975328 1.683510 9.028620  415.0431
+#> 3 nimble_slice         a 5.030552 4.939717 1.992757 1.472141 9.312853 1705.7418
 #>   efficiency
-#> 1   98155.43
-#> 2  402256.90
-#> 3  475000.00
+#> 1   89617.04
+#> 2  415043.12
+#> 3  426435.45
 #> 
 #> $byMCMC
 #>           MCMC min_efficiency mean_efficiency
-#> 1         jags       98155.43        98155.43
-#> 2       nimble      402256.90       402256.90
-#> 3 nimble_slice      475000.00       475000.00
+#> 1         jags       89617.04        89617.04
+#> 2       nimble      415043.12       415043.12
+#> 3 nimble_slice      426435.45       426435.45
 ```
 
 ## How to specify conversions
 
-The `conversions` argument to `applyConversions` (or to `compareMCMCs`, which is passed to `applyConversions`) provides a reasonably flexible system.  It should be a named list with names corresponding to MCMCs. Each element is itself of a list, which we call the *conversions specification*. Each element of the conversions specification defines one conversion, and the elements are processed in order.  The name of each element states the name of a column that will be created or modified in the MCMC samples.  The element itself can be a character string or call that will be evaluated to generate contents of the column.  It can also be `NULL` or `""`, in which case the the named column will be removed.
+The `conversions` argument to `applyConversions` (or to `compareMCMCs`, which is passed to `applyConversions`) provides a reasonably flexible system. It should be a named list with names corresponding to MCMCs. Each element is itself of a list, which we call the *conversions specification*. Each element of the conversions specification defines one conversion, and the elements are processed in order. The name of each element states the name of a column that will be created or modified in the MCMC samples. The element itself can be a character string or call that will be evaluated to generate contents of the column. It can also be `NULL` or `""`, in which case the the named column will be removed.
 
-In a character string or call, it can be important to use backticks around other column names, since they often include indexing notation (using "[]") as part of the name.  For example, to create the log of "beta[2]", you would include a conversion specification list element "``log_beta2 = log(`beta[2]`)``".  The backticks around "beta[2]" identify "beta[2]" as a name rather than the second element of a vector called "beta".  Doing it this way is necessary because columns in MCMC samples have names like "beta[2]".  In the example of above, we do not really need backticks around "a", but we have used them for illustration.
+In a character string or call, it can be important to use backticks around other column names, since they often include indexing notation (using "[]") as part of the name. For example, to create the log of "beta[2]", you would include a conversion specification list element "``log_beta2 = log(`beta[2]`)``". The backticks around "beta[2]" identify "beta[2]" as a name rather than the second element of a vector called "beta". Doing it this way is necessary because columns in MCMC samples have names like "beta[2]". In the example of above, we do not really need backticks around "a", but we have used them for illustration.
 
-In the first example above, the first conversion specification element says that `log_a` will be calculated as `log(a)`.  The second element says that `a` will be removed.
+In the first example above, the first conversion specification element says that `log_a` will be calculated as `log(a)`. The second element says that `a` will be removed.
 
-*It is also possible to modify the samples by directly manipulating the `samples` element of an `MCMCresult` object.*  It is simply a matrix.
+*It is also possible to modify the samples by directly manipulating the `samples` element of an `MCMCresult` object.* It is simply a matrix.
 
 # Writing new page component plugins.
 
-Writing a plugin to provide a new page component, such as a new figure, to be drawn by `make_MCMC_comparison_pages` is more complicated than writing a new metric.  A page component plugin is a list with up to five elements:
+Writing a plugin to provide a new page component, such as a new figure, to be drawn by `make_MCMC_comparison_pages` is more complicated than writing a new metric. A page component plugin is a list with up to five elements:
 
-* `make` is the character name of a function to create the plottable output such as a `ggplot` object.  This is described more below.
-* `fileSuffix` is a character suffix to be pasted to the model name to form a filename to which the figure will be output.  For example, `fileSuffix = '_mySuffix'` will lead to an output file called "model_mySuffix.jpg", if the model is named "model".
+* `make` is the character name of a function to create the plottable output such as a `ggplot` object. This is described more below.
+* `fileSuffix` is a character suffix to be pasted to the model name to form a filename to which the figure will be output. For example, `fileSuffix = '_mySuffix'` will lead to an output file called "model_mySuffix.jpg", if the model is named "model".
 * `linkText` is the character text that will be a hyperlink at the top of the comparison page.
-* `plot` is the name of a function to call to plot the output to a jpeg file such as "model_mySuffix.jpg".  The function takes as input the `plottable` element of the list returned from `make`.  If no `plot` function name is provided, the default function `plot` will be used.
-* `control` is a list that will be passed to the `make` function.  This allows each plugin to offer users to pass arbitrary information to `make`.
+* `plot` is the name of a function to call to plot the output to a jpeg file such as "model_mySuffix.jpg". The function takes as input the `plottable` element of the list returned from `make`. If no `plot` function name is provided, the default function `plot` will be used.
+* `control` is a list that will be passed to the `make` function. This allows each plugin to offer users to pass arbitrary information to `make`.
 
 ### More about the `make` function.
 
-The `make` element of a plugin names a function.  This function will be called with two arguments.  The first is a tidy-formatted combination of metrics from the results list returned by `compareMCMCs` (or concatenations of such lists).  This is created by `combineMetrics(results, include_times=TRUE)`.  The second is the `control` element of the plugin. 
+The `make` element of a plugin names a function. This function will be called with two arguments. The first is a tidy-formatted combination of metrics from the results list returned by `compareMCMCs` (or concatenations of such lists). This is created by `combineMetrics(results, include_times=TRUE)`. The second is the `control` element of the plugin. 
 
-The function can return information for either a text component or figure component to the final html.  For a figure component, it should return a list with three elements:
+The function can return information for either a text component or figure component to the final html. For a figure component, it should return a list with three elements:
 
-* `plottable` should be an object in one of two formats.  If the plugin provides a `plot` element, then `plottable ` can be any object.  It will simply be passed to the function named by `plot`, which should generate a figure.  If the plugin does not provide a `plot` element, then `plottable` should be an object such that calling `plot()` with that object as the argument results in generating a plot.  For example, an object returned from `ggplot` will work.
+* `plottable` should be an object in one of two formats. If the plugin provides a `plot` element, then `plottable ` can be any object. It will simply be passed to the function named by `plot`, which should generate a figure. If the plugin does not provide a `plot` element, then `plottable` should be an object such that calling `plot()` with that object as the argument results in generating a plot. For example, an object returned from `ggplot` will work.
 
 * `height` should be the height in inches to be passed as the `height` argument to `jpeg`.
 
@@ -560,33 +570,33 @@ The plotting will be done between a call to `jpeg` and a corresponding call to `
 
 For a text component, it should return a list with element:
 
-* `printable` should be either a character string of arbitrary html or an object of class `xtable` from the `xtable` package.  The latter will be printed with `type = 'html'`.
+* `printable` should be either a character string of arbitrary html or an object of class `xtable` from the `xtable` package. The latter will be printed with `type = 'html'`.
 
 #### Format of combined metrics provided to the `make` function.
 
 An example of the combined metrics from the above example is:
 
-```r
+``` r
 combineMetrics(res, include_times = TRUE)
 #> $byParameter
 #>           MCMC Parameter     mean   median       sd CI95_low CI95_upp       ESS
-#> 1         jags         a 5.016812 4.844788 1.975016 1.636743 9.446858  981.5543
-#> 2       nimble         a 5.026045 4.835894 1.954984 1.676182 9.348682  402.2569
-#> 3 nimble_slice         a 4.969071 4.846824 2.009493 1.537803 9.349607 1900.0000
+#> 1         jags         a 5.017371 4.829206 1.984103 1.672658 9.343369  985.7875
+#> 2       nimble         a 4.928662 4.723824 1.975328 1.683510 9.028620  415.0431
+#> 3 nimble_slice         a 5.030552 4.939717 1.992757 1.472141 9.312853 1705.7418
 #>   efficiency
-#> 1   98155.43
-#> 2  402256.90
-#> 3  475000.00
+#> 1   89617.04
+#> 2  415043.12
+#> 3  426435.45
 #> 
 #> $byMCMC
 #>           MCMC min_efficiency mean_efficiency
-#> 1         jags       98155.43        98155.43
-#> 2       nimble      402256.90       402256.90
-#> 3 nimble_slice      475000.00       475000.00
+#> 1         jags       89617.04        89617.04
+#> 2       nimble      415043.12       415043.12
+#> 3 nimble_slice      426435.45       426435.45
 #> 
 #> $times
 #>              burnin post-burnin total sampling
-#> jags          3e-03     0.00700          0.010
+#> jags          3e-03     0.00800          0.011
 #> nimble        5e-05     0.00095          0.001
 #> nimble_slice  2e-04     0.00380          0.004
 ```
@@ -595,7 +605,7 @@ combineMetrics(res, include_times = TRUE)
 
 Before using a new page component, you must register it using:
 
-```r
+``` r
 registerPageComponents(
   list(myNewComponent = 
          list(make = "myMakeFunction",
@@ -603,7 +613,7 @@ registerPageComponents(
               linkText = "My new page component.")
        )
   )
-#> <environment: 0x7fef4922a498>
+#> <environment: 0x7fc2812a1500>
 ```
 
 Then the name "myNewComponent" can be included in the character vector argument `pageComponents` to `make_MCMC_comparison_pages`. 
@@ -612,7 +622,7 @@ Then the name "myNewComponent" can be included in the character vector argument 
 
 The pre-defined page components include:
 
-* timing: table of setup, burnin, post-burnin, and total sampling  (burnin + post-burnin) times.
+* timing: table of setup, burnin, post-burnin, and total sampling (burnin + post-burnin) times.
 * efficiencySummary: barplot with min and mean MCMC efficiencies.
 * efficiencySummaryAllParams: efficiencySummary with additional figure of parameter-wise MCMC efficiencies.
 * paceSummaryAllParams: max, mean, and parameter-wise MCMC paces (pace = 1/efficiency).
@@ -623,13 +633,13 @@ If the `pageComponents` argument to `make_MCMC_comparison_pages` is `NULL`, all 
 
 # Writing new MCMC package plugins.
 
-An interface to a new MCMC engine is provided as a function.  It accepts the following inputs:
+An interface to a new MCMC engine is provided as a function. It accepts the following inputs:
 
-* `MCMCinfo`: The element of `externalMCMCinfo` named to match this MCMC plugin.  This can contain whatever information is needed for the plugin.
-* `MCMCcontrol`: The `MCMCcontrol` argument to `compareMCMCs`.  The `seed` argument to `compareMCMCs` will be added to this list with the name `seed`.  Prior to calling the MCMC engine plugin, `set.seed()` will be called with this `seed` as its argument.
-* `monitorInfo`: A list of names of parameters to monitor (record) in MCMC output. These are provided in two formats.  `monitorInfo$monitorVars` is a character vector of the names of variables for which every element should be monitored. `monitorInfo$monitors` is a character vector with the name of each scalar element of variables in `monitorInfo$monitorVars`  E.g., if there is a variable `x` with elements `x[1]`- `x[10]`, then "x" will be in  `monitorInfo$monitorVars` and "x[1]", "x[2]", ..., "x[10]" will be in `monitorInfo$monitors`.  Both formats may be needed.
-* `modelInfo` : The `modelInfo` argument to `compareMCMCs`.  If the call to `compareMCMCs` involved creating a `nimble` model, it will be added to this list with the name `model`.
+* `MCMCinfo`: The element of `externalMCMCinfo` named to match this MCMC plugin. This can contain whatever information is needed for the plugin.
+* `MCMCcontrol`: The `MCMCcontrol` argument to `compareMCMCs`. The `seed` argument to `compareMCMCs` will be added to this list with the name `seed`. Prior to calling the MCMC engine plugin, `set.seed()` will be called with this `seed` as its argument.
+* `monitorInfo`: A list of names of parameters to monitor (record) in MCMC output. These are provided in two formats. `monitorInfo$monitorVars` is a character vector of the names of variables for which every element should be monitored. `monitorInfo$monitors` is a character vector with the name of each scalar element of variables in `monitorInfo$monitorVars` E.g., if there is a variable `x` with elements `x[1]`- `x[10]`, then "x" will be in `monitorInfo$monitorVars` and "x[1]", "x[2]", ..., "x[10]" will be in `monitorInfo$monitors`. Both formats may be needed.
+* `modelInfo` : The `modelInfo` argument to `compareMCMCs`. If the call to `compareMCMCs` involved creating a `nimble` model, it will be added to this list with the name `model`.
 
-The function should use these arguments to run its MCMC engine and return an `MCMCresult` object with `times` (a list with elements `setup`, `burnin`, `postburnin`, and `sampling`, each with one number) and `samples` (a matrix with named columns for monitored parameters and rows for MCMC iterations) populated.  If the `MCMC` element is populated with a character string, this will be used as the label of the MCMC in metrics and comparison pages.  Otherwise the label used in the MCMCs argument to `compareMCMCs` will be used as the `MCMC` element.
+The function should use these arguments to run its MCMC engine and return an `MCMCresult` object with `times` (a list with elements `setup`, `burnin`, `postburnin`, and `sampling`, each with one number) and `samples` (a matrix with named columns for monitored parameters and rows for MCMC iterations) populated. If the `MCMC` element is populated with a character string, this will be used as the label of the MCMC in metrics and comparison pages. Otherwise the label used in the MCMCs argument to `compareMCMCs` will be used as the `MCMC` element.
 
 A new MCMC engine can be registered with `registerMCMCengine(name, fun)` where `fun` is the function just described and `name` is a name for it (which will be recognized in the `MCMCs` argument to `compareMCMCs`).

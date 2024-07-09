@@ -128,7 +128,8 @@ make_MCMC_comparison_pages <- function(results,
 
   ## Set control list by combining defaults with any user input.
   controlDefaults <- list(##makeTopPage = "if_needed",
-                          mainPageName = 'main')
+    mainPageName = 'main',
+    res = 300)
   if(missing(control))
     control <- controlDefaults
   else
@@ -192,6 +193,9 @@ make_MCMC_comparison_pages <- function(results,
                                            pageComponents[[j]][['control']]))
     }
 
+  res <- control$res
+  if(is.null(res)) res <- 300 # should be redundant with default above
+
     for(j in names(pageComponents)) {
       if(!is.null(madePageComponents[[j]][['plottable']])) {
         filename <- paste0(modelName,
@@ -201,7 +205,7 @@ make_MCMC_comparison_pages <- function(results,
                         height = madePageComponents[[j]]$height,
                         width = madePageComponents[[j]]$width,
                         units = 'in',
-                        res = 300)
+                        res = res)
         eval(call(
           if(is.null(pageComponents[[j]][['plot']]))
             'plot'
@@ -358,9 +362,9 @@ minMeanComparisonComponent <- function(results,
   if(length(unique(Efficiency$MCMC)) * length(unique(Efficiency$type)) ==
        length(Efficiency$MCMC)) {
     p <- ggplot2::ggplot(Efficiency,
-                         ggplot2::aes_string(x = "MCMC",
-                                             y= "Efficiency",
-                                             fill = "MCMC")) +
+                         ggplot2::aes(x = .data[["MCMC"]],
+                                      y = .data[["Efficiency"]],
+                                      fill = .data[["MCMC"]])) +
       ggplot2::geom_bar(position=ggplot2::position_dodge(),stat='identity') +
       ggplot2::ggtitle(title)+
       ggplot2::facet_wrap(~ type,ncol=2,scales='free') +
@@ -370,10 +374,10 @@ minMeanComparisonComponent <- function(results,
     ## there are multiple runs
     title <- paste0(title, "\n \"-\" shows mean.")
     p <- ggplot2::ggplot(Efficiency,
-                         ggplot2::aes_string(x = "MCMC",
-                                             y = "Efficiency",
-                                             fill = "MCMC",
-                                             color = "MCMC")) +
+                         ggplot2::aes(x = .data[["MCMC"]],
+                                      y = .data[["Efficiency"]],
+                                      fill = .data[["MCMC"]],
+                                      color = .data[["MCMC"]])) +
       ggplot2::geom_point(stat='identity')+
       ggplot2::stat_summary(fun = 'mean',
                             fun.min = function(x) mean(x) - sd(x),
@@ -439,10 +443,10 @@ allParamEfficiencyComparisonComponent <- function(results,
   }
 
   p <- ggplot2::ggplot(vars,
-                       ggplot2::aes_string(x = "MCMC",
-                                           y = efficiency_name,
-                                           color = "Parameter",
-                                           group = "Parameter")) +
+                       ggplot2::aes(x = .data[["MCMC"]],
+                                    y = .data[[efficiency_name]],
+                                    color = .data[["Parameter"]],
+                                    group = .data[["Parameter"]])) +
       ggplot2::geom_point() +
       ggplot2::geom_line() +
       ggplot2::ylab(ylabel) +
@@ -469,9 +473,9 @@ efficiencyDetailsComparisonComponent <- function(results,
   ncol <- control$ncol
   if(length(unique(df$Parameter)) * length(unique(df$MCMC)) == nrow(df)) {
     p <- ggplot2::ggplot(df,
-                         ggplot2::aes_string(x = "MCMC",
-                                             y= efficiency_name,
-                                             fill = "MCMC"))+ 
+                         ggplot2::aes(x = .data[["MCMC"]],
+                                      y= .data[[efficiency_name]],
+                                      fill = .data[["MCMC"]]))+
       ggplot2::geom_bar(position=ggplot2::position_dodge(),stat='identity')+
       ggplot2::ggtitle(
         paste0("MCMC efficiency details\n",
@@ -482,9 +486,10 @@ efficiencyDetailsComparisonComponent <- function(results,
   } else {
     ## multiple points for each method
     p <- ggplot2::ggplot(df,
-                         ggplot2::aes_string(x = "MCMC" ,
-                                             y = efficiency_name,
-                                             fill = "MCMC", color = "MCMC")) +
+                         ggplot2::aes(x = .data[["MCMC"]],
+                                      y= .data[[efficiency_name]],
+                                      fill = .data[["MCMC"]],
+                                      color = .data[["MCMC"]])) +
       ggplot2::geom_point(stat='identity') +
       ggplot2::stat_summary(fun = 'mean',
                             fun.min = function(x) mean(x) - sd(x),
@@ -526,18 +531,18 @@ posteriorSummaryComparisonComponent <- function(results,
 ##  df <- results$varSummaries
   ncol <- control$ncol
   p<-ggplot2::ggplot(df,
-                     ggplot2::aes_string(x = "MCMC", y = "mean")) +
-    ggplot2::geom_point(ggplot2::aes_string(color= "MCMC" ,size=1)) +
+                     ggplot2::aes(x = .data[["MCMC"]], y = .data[["mean"]])) +
+    ggplot2::geom_point(ggplot2::aes(color= .data[["MCMC"]] ,size=1)) +
     ggplot2::ggtitle("Posterior mean, median, and 95% CIs") +
     ggplot2::guides(size="none",
                     colour="none") +
-    ggplot2::geom_point(ggplot2::aes_string(x = "MCMC", y = "median", size=1),
+    ggplot2::geom_point(ggplot2::aes(x = .data[["MCMC"]], y = .data[["median"]], size=1),
                         shape=4) +
     ggplot2::facet_wrap(~ Parameter,
                         ncol=ncol,
                         scales='free') +
-    ggplot2::geom_errorbar(ggplot2::aes_string(ymax = "CI95_upp",
-                                               ymin = "CI95_low"),
+    ggplot2::geom_errorbar(ggplot2::aes(ymax = .data[["CI95_upp"]],
+                                        ymin = .data[["CI95_low"]]),
                            width=.25) +
     ggplot2::labs(y = 'Posterior values')
 

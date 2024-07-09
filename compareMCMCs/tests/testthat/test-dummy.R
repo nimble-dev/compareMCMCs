@@ -1,4 +1,3 @@
-context("Testing dummy MCMCdef")
 
 test_that("compareMCMCs works", {
   res <- compareMCMCs::compareMCMCs(needRmodel = FALSE,
@@ -16,9 +15,9 @@ test_that("compareMCMCs works", {
 }
 )
 
-  res <- compareMCMCs::compareMCMCs(needRmodel = FALSE,
-                                    MCMCs = c('dummy'),
-                                    monitors = paste0("x[", 1:20, "]"),
-                                    MCMCcontrol = list(niter = 2000))
-make_MCMC_comparison_pages(res, modelName = "dummy")
-browseURL(file.path(tempdir(), "dummy.html"))
+##   res <- compareMCMCs::compareMCMCs(needRmodel = FALSE,
+##                                     MCMCs = c('dummy'),
+##                                     monitors = paste0("x[", 1:20, "]"),
+##                                     MCMCcontrol = list(niter = 2000))
+## make_MCMC_comparison_pages(res, modelName = "dummy")
+## browseURL(file.path(tempdir(), "dummy.html"))

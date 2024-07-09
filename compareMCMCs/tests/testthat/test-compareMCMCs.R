@@ -1,4 +1,3 @@
-context("Testing compareMCMCs")
 
 # Many of these tests are commented out because they are slow or require
 # external packages or configurations.

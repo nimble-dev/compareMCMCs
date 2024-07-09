@@ -2,12 +2,12 @@
 % Please edit documentation in R/compareMCMCs.R
 \name{compareMCMCs}
 \alias{compareMCMCs}
-\title{run a set of MCMCs for performance comparison}
+\title{Run a set of MCMCs for performance comparison}
 \usage{
 compareMCMCs(
   modelInfo = list(),
   MCMCcontrol = list(niter = 10000, thin = 1, burnin = 2000),
-  MCMCs = "nimble",
+  MCMCs = names(nimbleMCMCdefs),
   monitors = character(),
   nimbleMCMCdefs = list(),
   externalMCMCinfo = list(),
@@ -21,45 +21,51 @@ compareMCMCs(
 )
 }
 \arguments{
-\item{modelInfo}{A list of nimble model-specification information
-(which may be relevant for JAGS, WinBUGS and/or OpenBUGS as
-well) and/or a nimble model itself. To provide information
-for a different MCMC engine, see
-argument \code{externalMCMCinfo}.  Named elements in
-\code{modelInfo} can include \code{code} (model code as returned from
-\code{nimbleCode}), \code{data} (a list with data), \code{constants} (a list
-with data and/or constants), \code{inits} (a list of initial
-values), and/or \code{model} (an object returned from \code{nimbleModel}).
-If \code{model} is not provided, and if an R model will be needed, then
-\code{nimbleModel} will be called to create one using \code{code}, \code{data}, and/or \code{inits}.
-See \code{nimbleModel} in package nimble for for information
-on these arguments.  For JAGS, WinBUGS and OpenBUGS, many models
-can be run from the same specification since they use nearly the
-same model language.  If \code{model} is provided, the other elements
-will not be needed if only nimble MCMCs are used but will be needed if JAGS,
-WinBUGS or OpenBUGS will be used..}
+\item{modelInfo}{A list of nimble model-specification information (which may
+be relevant for JAGS, WinBUGS and/or OpenBUGS as well) and/or a nimble
+model itself. To provide information for a different MCMC engine, see
+argument \code{externalMCMCinfo}. Named elements in \code{modelInfo} can
+include \code{code} (model code as returned from \code{nimbleCode}), \code{data} (a list
+with data), \code{constants} (a list with data and/or constants), \code{inits} (a
+list of initial values), and/or \code{model} (an object returned from
+\code{nimbleModel}). If \code{model} is not provided, and if an R model will be
+needed, then \code{nimbleModel} will be called to create one using \code{code},
+\code{data}, and/or \code{inits}. See \code{nimbleModel} in package nimble for for
+information on these arguments. For JAGS, WinBUGS and OpenBUGS, many models
+can be run from the same specification since they use nearly the same model
+language. If \code{model} is provided, the other elements will not be needed if
+only nimble MCMCs are used but will be needed if JAGS, WinBUGS or OpenBUGS
+will be used. (Note: There is currently no built-in support for WinBUGS or
+OpenBUGS. They are mentioned here in case one makes a plug-in to use them.)
+If model is a \emph{compiled} nimble model, then other list elements will be
+ignored and the only MCMCs that can be run are \emph{compiled} nimble MCMCs
+provided in \code{nimbleMCMCdefs}.}
 
 \item{MCMCcontrol}{A list with fields \code{niter} (number of
 iterations), \code{thin} (thinning interval), and \code{burnin} (number
 of iterations to discard from the beginning of the MCMC
 sample).}
 
-\item{MCMCs}{A character vector of MCMC cases to run.  This can
-include "nimble" (default nimble samplers), "jags", "stan", one
-of several nimble special cases (see details below), custom
-nimble sampler configurations provided via argument
-\code{nimbleMCMCdefs}, and external MCMC engines registered via
-\code{\link{registerMCMCengine}}.  See \link{builtin_MCMCs} for
-information on "jags" and "stan".  Support for OpenBUGS and
-WinBUGS is pending.}
+\item{MCMCs}{A character vector of MCMC cases to run. This can include
+"nimble" (default nimble samplers), "jags", "stan", one of several nimble
+special cases (see details below), custom nimble sampler configurations
+provided via argument \code{nimbleMCMCdefs}, and external MCMC engines
+registered via \code{\link{registerMCMCengine}}. See \link{builtin_MCMCs}
+for information on "jags" and "stan". Support for OpenBUGS and WinBUGS is
+pending. Default is names(nimbleMCMCdefs), so that all provided nimble
+cases will be run. (If a \emph{compiled} nimble model is provided in
+\code{modelInfo$model}, then \code{MCMCs} can include only names of
+\code{nimbleMCMCdefs}.)}
 
 \item{monitors}{A character vector of variable names to monitor
 (record in MCMC output).  If missing, this will be determined
 from the nimble model as all top-level parameter names
 (e.g. hyper-parameters).}
 
-\item{nimbleMCMCdefs}{A list of information for custom sampler
-configurations in nimble.  See package vignette for details.}
+\item{nimbleMCMCdefs}{A list of information for custom sampler configurations
+in nimble. See package vignette for details. If a \emph{compiled} nimble model
+is provided in \code{modelInfo$model}, then \code{nimbleMCMCdefs} must be a named
+list of \emph{compiled} nimble MCMCs.}
 
 \item{externalMCMCinfo}{A list of arbitrary information for
 external MCMC engines, named by engine names.  If there is an
@@ -104,8 +110,9 @@ result.}
 A list of \code{MCMCresult} objects.
 }
 \description{
-run one or more MCMC engines for one model specification, with
-timing and performance metrics calculated.
+Run one or more MCMC engines for one model specification, with timing and
+performance metrics calculated. See details for special case of precompiled
+nimble MCMCs.
 }
 \details{
 The special cases provided for the \code{MCMCs} argument
@@ -117,6 +124,13 @@ Metropolis-Hastings (ARWMH) samplers in place of Gibbs
 \item "nimble_RW": use all adaptive random-walk Metropolis-Hastings samplers.
 \item "nimble_slice": use all slice samplers.
 }
+
+If you have already used \code{compileNimble} to compile both a nimble model and
+one or more nimble MCMCs, provide the compiled model as \code{modelInfo$model} and
+provide the compiled MCMCs as elements of a named list for \code{nimbleMCMCdefs}.
+In that case, the monitors will already be set in the MCMCs and can't be
+changed. However, you can still use the \code{monitors} argument to subset and/or
+re-order the monitored nodes (parameters).
 
 See package vignette for more details and examples.
 }

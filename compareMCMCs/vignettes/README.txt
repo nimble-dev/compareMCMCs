@@ -35,7 +35,7 @@ variable created in the "setup" code chunk (and illustrated in a later code
 chunk). We show as a default how to set work_dir to "tempdir()" (R's
 session-specific temporary directory for working files) to comply with CRAN's
 policy that vignettes should not write into a user's workspace. However, you
-will then need to find the genearted files (from make_MCMC_comparison_pages) to
+will then need to find the generated files (from make_MCMC_comparison_pages) to
 open them and see the results. If you don't mind having files written locally,
 uncomment the code "work_dir = getwd()", which will result in the files being
 placed in your curreng working directory.

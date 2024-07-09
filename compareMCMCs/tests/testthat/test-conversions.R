@@ -1,4 +1,3 @@
-context("applyConversions works")
 
 test_that("conversion specifications work", {
 #  library(compareMCMCs)
@@ -76,11 +75,10 @@ test_that("conversion specifications work", {
   expect_identical(newSamples, check3)
   
   # invalid calculation:
+  message("Error about `[[<-.data.frame` is expected.")
   myInvalidConv <- function(samples) {
     rep(1, nrow(samples)-1) # will give a size error
   }
   expect_warning(newSamples <- applyConversions(samples, list(z = myInvalidConv)))
-  
-  
 }
 )
