@@ -1,4 +1,4 @@
-# This is no longer used but is retained in case it is needed in the future.
+
 embed_jpg_in_html <- function(htmlfile, jpgfile, overwrite = FALSE) {
   htmlorig <- readLines(htmlfile)
   htmlupdated <- if(overwrite) htmlfile else gsub(".html", "_modified.html", htmlfile)

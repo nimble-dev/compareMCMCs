@@ -1,0 +1,20 @@
+citHeader("In published work that uses or mentions compareMCMCs, please cite the Journal of Open Source Software article. In work that uses compareMCMCs, please also cite the R package for the specific version used. Please include the DOI for the package in the citation.")
+
+year <- sub("-.*", "", meta$Date)
+note <- sprintf("{R} package version %s", meta$Version)
+
+bibentry(
+ bibtype = "article",
+ title = "{compareMCMCs}: An {R} package for studying {MCMC} efficiency",
+ journal = "Journal of Open Source Software",
+ volume = "7",
+ number = "69",
+ pages = "3844",
+ year = "2022",
+ publisher = "The Open Journal",
+ author = c(person("Perry", "de Valpine"),
+            person("Sally", "Paganin"),
+            person("Daniel", "Turek")),
+ doi = "10.21105/joss.03844",
+ textVersion = "Perry de Valpine, Sally Paganin, and Daniel Turek. (2022). compareMCMCs: An R package for studying MCMC efficiency. Journal of Open Source Software, 7(69), 3844, <DOI:10.21105/joss.03844>"
+)
